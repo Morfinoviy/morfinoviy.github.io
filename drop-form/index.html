@@ -48,12 +48,30 @@ textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:
 .sw{width:52px;height:30px;border-radius:999px;background:rgba(255,255,255,.12);position:relative;transition:.35s var(--ease);flex:none}
 .sw:after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.35s var(--ease);box-shadow:0 2px 8px rgba(0,0,0,.4)}
 .sw.on{background:linear-gradient(90deg,var(--acc2),#c084fc);box-shadow:0 0 22px rgba(168,85,247,.65)} .sw.on:after{transform:translateX(22px)}
+.note{margin-top:14px;padding:14px 16px;border-radius:18px;background:linear-gradient(135deg,rgba(124,58,237,.35),rgba(168,85,247,.12));
+ border:1px solid rgba(192,132,252,.45);box-shadow:0 0 26px rgba(168,85,247,.25);font-size:14px;animation:up .6s var(--ease) both}
+.note b{display:block;font-size:15px;margin-bottom:4px} .note details{margin-top:8px;color:#e9d5ff} .note summary{cursor:pointer;color:#d8b4fe;font-weight:700}
+.note ol{margin:8px 0 0 18px} .note li{margin-top:4px}
+.check{display:flex;gap:12px;align-items:flex-start;margin-top:12px;padding:12px 14px;border-radius:14px;background:rgba(0,0,0,.28);border:1px solid var(--line);cursor:pointer;transition:.3s var(--ease)}
+.check i{flex:none;width:24px;height:24px;border-radius:8px;border:2px solid rgba(192,132,252,.6);display:grid;place-items:center;font-style:normal;transition:.3s var(--ease)}
+.check.on{border-color:rgba(192,132,252,.8);box-shadow:0 0 22px rgba(168,85,247,.35)} .check.on i{background:linear-gradient(135deg,#c084fc,var(--acc2));border-color:transparent}
+.check.on i:after{content:"✓";color:#fff;font-weight:900} .check.need{border-color:var(--err);box-shadow:0 0 16px rgba(248,113,113,.35)}
+.total{display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding:12px 14px;border-radius:14px;background:rgba(168,85,247,.12);border:1px solid rgba(192,132,252,.35)}
+.total b{font-size:22px;font-weight:900;letter-spacing:-.02em} .margin-ok{color:var(--ok)} .margin-bad{color:var(--err)}
 </style></head><body>
 <h1>Новый заказ</h1><p class="sub">Заполни анкету — заказ уйдёт владельцу</p>
+<div class="note" id="cityNote"><b>📍 Отправка только из города <span class="city"></span></b>
+ Для Авито Доставки клиент должен оформить покупку в объявлении с городом <span class="city"></span>.
+ <details><summary>Как это сделать</summary><ol>
+  <li>Держи копию объявления с городом <span class="city"></span> (основное может быть хоть на Москву).</li>
+  <li>Клиент написал по другому объявлению — дай ему ссылку на объявление <span class="city"></span>.</li>
+  <li>Он жмёт «Купить с доставкой» именно там — Авито создаст отправку из <span class="city"></span>.</li>
+  <li>Пришли боту QR-код / код отправки из Авито.</li></ol></details></div>
 <div class="bar"><i id="prog"></i></div>
 <div class="sec"><b>Товар</b><div class="prods" id="prods"></div></div>
 <div class="sec" id="sizeSec" style="display:none"><b>Размер</b><div class="chips" id="sizes"></div></div>
-<div class="sec"><b>Доставка</b><div class="chips" id="dels"></div></div>
+<div class="sec"><b>Доставка</b><div class="chips" id="dels"></div>
+ <div class="check" id="cityOk" style="display:none"><i></i><span>Клиент оформил покупку в объявлении с городом <b class="city"></b></span></div></div>
 <div class="sec"><b>Получатель</b>
  <input id="fio" placeholder="ФИО" autocomplete="name" maxlength="120">
  <input id="phone" placeholder="Телефон" inputmode="tel" autocomplete="tel" maxlength="30">
@@ -82,10 +100,16 @@ $('prods').onclick = e => { const el = e.target.closest('.prod'); if (!el) retur
   $('sizes').innerHTML = s.map(x => `<span class="chip">${esc(x)}</span>`).join(''); F.sizes = s; check(); };
 $('sizes').onclick = e => { const el = e.target.closest('.chip'); if (!el) return; pick($('sizes'), el); F.size = el.textContent; check(); };
 $('dels').innerHTML = DELIVERY.map(x => `<span class="chip">${x}</span>`).join('');
-$('dels').onclick = e => { const el = e.target.closest('.chip'); if (!el) return; pick($('dels'), el); F.delivery = el.textContent; check(); };
+$('dels').onclick = e => { const el = e.target.closest('.chip'); if (!el) return; pick($('dels'), el); F.delivery = el.textContent;
+  $('cityOk').style.display = F.delivery === 'Авито Доставка' ? '' : 'none'; check(); };
+const CITY = new URLSearchParams(location.search).get('city') || '';
+document.querySelectorAll('.city').forEach(e => e.textContent = CITY); if (!CITY) $('cityNote').style.display = 'none';
+F.cityOk = false;
+$('cityOk').onclick = () => { F.cityOk = !F.cityOk; $('cityOk').classList.toggle('on', F.cityOk); $('cityOk').classList.remove('need'); tg && tg.HapticFeedback.selectionChanged(); check(); };
+const cityNeed = () => CITY && F.delivery === 'Авито Доставка' && !F.cityOk;
 ['fio', 'phone', 'address', 'comment'].forEach(k => $(k).oninput = () => { $(k).classList.remove('bad'); check(); });
 
-const ok = () => F.p !== null && (!F.sizes.length || F.size) && F.delivery && $('fio').value.trim().length > 1
+const ok = () => F.p !== null && (!F.sizes.length || F.size) && F.delivery && !cityNeed() && $('fio').value.trim().length > 1
   && $('phone').value.replace(/\D/g, '').length >= 10 && $('address').value.trim().length > 3;
 function check() {
   const parts = [F.p !== null, F.p !== null && (!F.sizes.length || F.size), F.delivery, $('fio').value.trim().length > 1,
@@ -96,7 +120,8 @@ function check() {
 function submit() {
   if (!ok()) { ['fio', 'address'].forEach(k => $(k).value.trim() || $(k).classList.add('bad'));
     if ($('phone').value.replace(/\D/g, '').length < 10) $('phone').classList.add('bad'); return; }
-  const data = JSON.stringify({p: F.p, name: F.name, size: F.size, delivery: F.delivery, fio: $('fio').value.trim(),
+  if (cityNeed()) $('cityOk').classList.add('need');
+  const data = JSON.stringify({p: F.p, name: F.name, size: F.size, delivery: F.delivery, city_ok: F.cityOk, fio: $('fio').value.trim(),
     phone: $('phone').value.trim(), address: $('address').value.trim(), comment: $('comment').value.trim(), sale: $('sale').value.trim()});
   if (tg && tg.sendData) tg.sendData(data); else alert('Открой анкету из Telegram-бота');
 }

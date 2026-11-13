@@ -54,6 +54,16 @@ textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:
 .tile .sz{background:none;border:0;text-align:center;font-weight:800;font-size:18px;padding:2px 0 6px;box-shadow:none!important}
 .tile .step{justify-content:space-between} .tile .step span{width:30px;padding:6px 0} .tile .step input{width:30px;padding:6px 0;font-size:14px}
 .tile .x{position:absolute;top:0;right:0;width:26px;height:26px;font-size:15px}
+.note{margin-top:14px;padding:14px 16px;border-radius:18px;background:linear-gradient(135deg,rgba(124,58,237,.35),rgba(168,85,247,.12));
+ border:1px solid rgba(192,132,252,.45);box-shadow:0 0 26px rgba(168,85,247,.25);font-size:14px;animation:up .6s var(--ease) both}
+.note b{display:block;font-size:15px;margin-bottom:4px} .note details{margin-top:8px;color:#e9d5ff} .note summary{cursor:pointer;color:#d8b4fe;font-weight:700}
+.note ol{margin:8px 0 0 18px} .note li{margin-top:4px}
+.check{display:flex;gap:12px;align-items:flex-start;margin-top:12px;padding:12px 14px;border-radius:14px;background:rgba(0,0,0,.28);border:1px solid var(--line);cursor:pointer;transition:.3s var(--ease)}
+.check i{flex:none;width:24px;height:24px;border-radius:8px;border:2px solid rgba(192,132,252,.6);display:grid;place-items:center;font-style:normal;transition:.3s var(--ease)}
+.check.on{border-color:rgba(192,132,252,.8);box-shadow:0 0 22px rgba(168,85,247,.35)} .check.on i{background:linear-gradient(135deg,#c084fc,var(--acc2));border-color:transparent}
+.check.on i:after{content:"✓";color:#fff;font-weight:900} .check.need{border-color:var(--err);box-shadow:0 0 16px rgba(248,113,113,.35)}
+.total{display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding:12px 14px;border-radius:14px;background:rgba(168,85,247,.12);border:1px solid rgba(192,132,252,.35)}
+.total b{font-size:22px;font-weight:900;letter-spacing:-.02em} .margin-ok{color:var(--ok)} .margin-bad{color:var(--err)}
 </style></head><body>
 <h1>Новый товар</h1><p class="sub">Добавится в каталог для партнёров и выйдет постом в канал</p>
 <div class="bar"><i id="prog"></i></div>
@@ -62,11 +72,18 @@ textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:
 <div class="sec" id="sizeSec"><b>Размеры и количество</b>
  <div id="sizes"></div><span class="link" id="addSize">+ размер</span>
  <p class="hint">Количество 0 — размер есть в каталоге, но не в наличии.</p></div>
-<div class="sec"><b>Цены, ₽</b><div class="grid3">
+<div class="sec"><b>Себестоимость</b><div class="grid3" style="grid-template-columns:1fr 1fr">
+ <div><small>Цена, ¥</small><input id="cny" inputmode="decimal" placeholder="260"></div>
+ <div><small>Курс ¥ → ₽ <span id="rateSrc"></span></small><input id="rate" inputmode="decimal" placeholder="12.5"></div>
+ <div><small>Китай → Москва, ₽</small><input id="d1" inputmode="decimal" placeholder="600"></div>
+ <div><small>Москва → <span class="city">городу</span>, ₽</small><input id="d2" inputmode="decimal" placeholder="350"></div></div>
+ <div class="total"><span class="mut">Себестоимость</span><b id="costOut">0 ₽</b></div>
+ <p class="hint" id="costHint">Без юаней — впиши закупку вручную: <input id="cost" inputmode="decimal" placeholder="2900" style="width:110px;display:inline-block;padding:6px 10px;margin-left:4px"></p></div>
+<div class="sec"><b>Цены для партнёров, ₽</b><div class="grid3" style="grid-template-columns:1fr 1fr">
  <div><small>Дроп-цена</small><input id="price" inputmode="decimal" placeholder="4500"></div>
- <div><small>Закупка</small><input id="cost" inputmode="decimal" placeholder="2900"></div>
- <div><small>Рекоменд.</small><input id="retail" inputmode="decimal" placeholder="6990"></div></div>
- <p class="hint">Дроп-цену и рекомендуемую увидят в канале. Закупку — только ты, для расчёта прибыли.</p></div>
+ <div><small>Рекомендуемая</small><input id="retail" inputmode="decimal" placeholder="6990"></div></div>
+ <div class="total"><span class="mut">Твоя наценка</span><b id="marginOut">—</b></div>
+ <p class="hint">Дроп-цену и рекомендуемую увидят в канале. Себестоимость — только ты.</p></div>
 <div class="sec"><b>Описание</b><textarea id="desc" maxlength="700" placeholder="Оригинал, новые, в коробке. Отправка в день заказа."></textarea></div>
 <div class="sec"><div class="toggle" id="chan"><span>Опубликовать в канал</span><div class="sw on"></div></div></div>
 <p class="hint">Фото пришлёшь боту следующим шагом — можно сразу альбомом.</p>
@@ -104,10 +121,25 @@ function check() {
 function submit() {
   if (!ok()) return $('name').classList.add('bad');
   const data = JSON.stringify({kind: 'post', name: $('name').value.trim(), cat: F.cat, sizes: F.cat === 'belts' ? [] : F.sizes.filter(r => String(r[0]).trim()),
-    price: $('price').value, cost: $('cost').value, retail: $('retail').value, desc: $('desc').value.trim(), channel: F.channel});
+    price: $('price').value, cost: $('cost').value, cny: $('cny').value, rate: $('rate').value, d1: $('d1').value, d2: $('d2').value, retail: $('retail').value, desc: $('desc').value.trim(), channel: F.channel});
   if (tg && tg.sendData) tg.sendData(data); else alert('Открой форму из Telegram-бота');
 }
 $('send').onclick = submit;
 if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor('#07050c'); tg.setBackgroundColor('#07050c'); } catch (e) {} tg.MainButton.color = '#7c3aed'; tg.MainButton.onClick(submit); }
-F.sizes = grid(CATS.shoes[1]).map(s => [s, 1]); drawCats(); drawSizes(); check();
+// ---- калькулятор: ¥ × курс + доставка; курс — с прошлого товара или ЦБ на сегодня
+const QS = new URLSearchParams(location.search), n = id => parseFloat(($(id).value || '').replace(/\s/g, '').replace(',', '.')) || 0;
+const rubs = x => Math.round(x).toLocaleString('ru-RU') + ' ₽';
+document.querySelectorAll('.city').forEach(e => e.textContent = QS.get('city') || 'городу');
+['d1', 'd2'].forEach(k => +QS.get(k) && ($(k).value = QS.get(k)));
+if (+QS.get('r')) { $('rate').value = QS.get('r'); $('rateSrc').textContent = '· прошлый'; }
+else fetch('https://www.cbr-xml-daily.ru/daily_json.js').then(r => r.json()).then(j => { const v = j.Valute.CNY.Value / j.Valute.CNY.Nominal;
+  if (!$('rate').value) { $('rate').value = v.toFixed(2); $('rateSrc').textContent = '· ЦБ'; calc(); } }).catch(() => {});
+function calc() {
+  const fromCny = n('cny') > 0, cost = fromCny ? n('cny') * n('rate') + n('d1') + n('d2') : n('cost');
+  $('cost').disabled = fromCny; if (fromCny) $('cost').value = Math.round(cost);
+  $('costOut').textContent = rubs(cost); const m = n('price') - cost;
+  $('marginOut').innerHTML = n('price') ? `<span class="${m >= 0 ? 'margin-ok' : 'margin-bad'}">${m >= 0 ? '+' : ''}${rubs(m)}${cost ? ' · ' + Math.round(m / cost * 100) + '%' : ''}</span>` : '—';
+}
+['cny', 'rate', 'd1', 'd2', 'cost', 'price'].forEach(k => $(k).addEventListener('input', calc));
+F.sizes = grid(CATS.shoes[1]).map(s => [s, 1]); drawCats(); drawSizes(); check(); calc();
 </script></body></html>
