@@ -95,14 +95,15 @@ function pick(box, el) { box.querySelectorAll('.sel').forEach(x => x.classList.r
 $('prods').innerHTML = cat.map(([i, n, s], k) => `<div class="prod" data-k="${k}">${esc(n)}<small>${s.length ? 'Размеры: ' + s.map(esc).join(', ') : 'Без размера'}</small></div>`).join('')
   || '<div class="empty">Сейчас нет товаров в наличии</div>';
 $('prods').onclick = e => { const el = e.target.closest('.prod'); if (!el) return; pick($('prods'), el);
-  const [i, n, s] = cat[+el.dataset.k]; F.p = i; F.name = n; F.size = '';
+  const [i, n, s, city] = cat[+el.dataset.k]; F.p = i; F.name = n; F.size = '';
+  CITY = city || URL_CITY; document.querySelectorAll('.city').forEach(e => e.textContent = CITY); $('cityNote').style.display = CITY ? '' : 'none';
   $('sizeSec').style.display = s.length ? '' : 'none';
   $('sizes').innerHTML = s.map(x => `<span class="chip">${esc(x)}</span>`).join(''); F.sizes = s; check(); };
 $('sizes').onclick = e => { const el = e.target.closest('.chip'); if (!el) return; pick($('sizes'), el); F.size = el.textContent; check(); };
 $('dels').innerHTML = DELIVERY.map(x => `<span class="chip">${x}</span>`).join('');
 $('dels').onclick = e => { const el = e.target.closest('.chip'); if (!el) return; pick($('dels'), el); F.delivery = el.textContent;
   $('cityOk').style.display = F.delivery === 'Авито Доставка' ? '' : 'none'; check(); };
-const CITY = new URLSearchParams(location.search).get('city') || '';
+const URL_CITY = new URLSearchParams(location.search).get('city') || ''; let CITY = URL_CITY;
 document.querySelectorAll('.city').forEach(e => e.textContent = CITY); if (!CITY) $('cityNote').style.display = 'none';
 F.cityOk = false;
 $('cityOk').onclick = () => { F.cityOk = !F.cityOk; $('cityOk').classList.toggle('on', F.cityOk); $('cityOk').classList.remove('need'); tg && tg.HapticFeedback.selectionChanged(); check(); };

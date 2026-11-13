@@ -75,8 +75,10 @@ textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:
 <div class="sec"><b>Себестоимость</b><div class="grid3" style="grid-template-columns:1fr 1fr">
  <div><small>Цена, ¥</small><input id="cny" inputmode="decimal" placeholder="260"></div>
  <div><small>Курс ¥ → ₽ <span id="rateSrc"></span></small><input id="rate" inputmode="decimal" placeholder="12.5"></div>
- <div><small>Китай → Москва, ₽</small><input id="d1" inputmode="decimal" placeholder="600"></div>
- <div><small>Москва → <span class="city">городу</span>, ₽</small><input id="d2" inputmode="decimal" placeholder="350"></div></div>
+ <div><small>Вес с упаковкой, кг</small><input id="kg" inputmode="decimal" placeholder="1.2"></div>
+ <div><small>Китай → Москва, ₽/кг</small><input id="d1" inputmode="decimal" value="350"></div>
+ <div><small>Москва → <span class="city">городу</span>, ₽/кг</small><input id="d2" inputmode="decimal" value="100"></div></div>
+ <p class="hint" id="shipOut"></p>
  <div class="total"><span class="mut">Себестоимость</span><b id="costOut">0 ₽</b></div>
  <p class="hint" id="costHint">Без юаней — впиши закупку вручную: <input id="cost" inputmode="decimal" placeholder="2900" style="width:110px;display:inline-block;padding:6px 10px;margin-left:4px"></p></div>
 <div class="sec"><b>Цены для партнёров, ₽</b><div class="grid3" style="grid-template-columns:1fr 1fr">
@@ -85,6 +87,8 @@ textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:
  <div class="total"><span class="mut">Твоя наценка</span><b id="marginOut">—</b></div>
  <p class="hint">Дроп-цену и рекомендуемую увидят в канале. Себестоимость — только ты.</p></div>
 <div class="sec"><b>Описание</b><textarea id="desc" maxlength="700" placeholder="Оригинал, новые, в коробке. Отправка в день заказа."></textarea></div>
+<div class="sec" id="supSec" style="display:none"><b>Откуда отправляешь</b><input id="city" maxlength="40" placeholder="Город, например Москва">
+ <p class="hint" id="feeNote"></p></div>
 <div class="sec"><div class="toggle" id="chan"><span>Опубликовать в канал</span><div class="sw on"></div></div></div>
 <p class="hint">Фото пришлёшь боту следующим шагом — можно сразу альбомом.</p>
 <button id="send">Дальше: фото</button>
@@ -121,7 +125,7 @@ function check() {
 function submit() {
   if (!ok()) return $('name').classList.add('bad');
   const data = JSON.stringify({kind: 'post', name: $('name').value.trim(), cat: F.cat, sizes: F.cat === 'belts' ? [] : F.sizes.filter(r => String(r[0]).trim()),
-    price: $('price').value, cost: $('cost').value, cny: $('cny').value, rate: $('rate').value, d1: $('d1').value, d2: $('d2').value, retail: $('retail').value, desc: $('desc').value.trim(), channel: F.channel});
+    price: $('price').value, cost: $('cost').value, cny: $('cny').value, rate: $('rate').value, kg: $('kg').value, d1: $('d1').value, d2: $('d2').value, city: $('city').value.trim(), retail: $('retail').value, desc: $('desc').value.trim(), channel: F.channel});
   if (tg && tg.sendData) tg.sendData(data); else alert('Открой форму из Telegram-бота');
 }
 $('send').onclick = submit;
@@ -135,11 +139,18 @@ if (+QS.get('r')) { $('rate').value = QS.get('r'); $('rateSrc').textContent = '�
 else fetch('https://www.cbr-xml-daily.ru/daily_json.js').then(r => r.json()).then(j => { const v = j.Valute.CNY.Value / j.Valute.CNY.Nominal;
   if (!$('rate').value) { $('rate').value = v.toFixed(2); $('rateSrc').textContent = '· ЦБ'; calc(); } }).catch(() => {});
 function calc() {
-  const fromCny = n('cny') > 0, cost = fromCny ? n('cny') * n('rate') + n('d1') + n('d2') : n('cost');
+  const ship = n('kg') * (n('d1') + n('d2')), fromCny = n('cny') > 0, cost = fromCny ? n('cny') * n('rate') + ship : n('cost');
+  $('shipOut').textContent = n('kg') ? `Доставка: ${n('kg')} кг × (${n('d1')} + ${n('d2')}) ₽ = ${rubs(ship)}` : 'Укажи вес — посчитаю доставку';
   $('cost').disabled = fromCny; if (fromCny) $('cost').value = Math.round(cost);
   $('costOut').textContent = rubs(cost); const m = n('price') - cost;
   $('marginOut').innerHTML = n('price') ? `<span class="${m >= 0 ? 'margin-ok' : 'margin-bad'}">${m >= 0 ? '+' : ''}${rubs(m)}${cost ? ' · ' + Math.round(m / cost * 100) + '%' : ''}</span>` : '—';
 }
-['cny', 'rate', 'd1', 'd2', 'cost', 'price'].forEach(k => $(k).addEventListener('input', calc));
+['cny', 'rate', 'kg', 'd1', 'd2', 'cost', 'price'].forEach(k => $(k).addEventListener('input', calc));
+if (QS.get('role') === 'supplier') {  // поставщик: свой город, комиссия владельца, публикация — после проверки владельцем
+  $('supSec').style.display = ''; $('chan').closest('.sec').style.display = 'none'; $('city').value = QS.get('city') || '';
+  $('feeNote').textContent = `Комиссия владельца — ${QS.get('fee') || 0}% от дроп-цены. Товар появится после его проверки.`;
+  document.querySelector('.sub').textContent = 'Владелец проверит товар и опубликует в канале';
+  $('city').addEventListener('input', () => document.querySelectorAll('.city').forEach(e => e.textContent = $('city').value || 'городу'));
+}
 F.sizes = grid(CATS.shoes[1]).map(s => [s, 1]); drawCats(); drawSizes(); check(); calc();
 </script></body></html>
