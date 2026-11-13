@@ -68,6 +68,7 @@ textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:
 </head><body>
 <h1>Стать поставщиком</h1><p class="sub">Расскажи о магазине — владелец посмотрит и откроет доступ. Твои товары будут продавать партнёры.</p>
 <div class="bar"><i id="prog"></i></div>
+<div class="note" id="trust" style="display:none;white-space:pre-line"></div>
 <div class="sec"><b>Магазин</b><input id="shop" maxlength="80" placeholder="Название магазина или бренда">
  <input id="link" maxlength="200" placeholder="Ссылка на магазин, канал или Авито — необязательно"></div>
 <div class="sec"><b>Контакты</b><input id="person" maxlength="80" placeholder="Как к тебе обращаться">
@@ -93,6 +94,7 @@ const OPTS = {volume: ['до 20', '20–100', '100–500', '500+'], where: ['А�
   orig: ['Оригинал', 'Реплика', 'Смешанно', 'Не про бренды'], ship: ['В день оплаты', '1–2 дня', '3–5 дней', 'Под заказ']};
 const F = {cats: [], where: [], volume: '', orig: '', ship: '', avito: false, agree: false};
 $('fee').textContent = (QS.get('fee') || '—') + '%';
+if (QS.get('trust')) { $('trust').textContent = QS.get('trust'); $('trust').style.display = ''; }  // факты из базы бота
 $('cats').innerHTML = CATS.map(c => `<span class="chip">${esc(c)}</span>`).join('');
 Object.entries(OPTS).forEach(([k, v]) => $(k).innerHTML = v.map(c => `<span class="chip">${esc(c)}</span>`).join(''));
 const toggle = (arr, v) => arr.includes(v) ? arr.splice(arr.indexOf(v), 1) : arr.push(v);
