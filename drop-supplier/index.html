@@ -64,6 +64,26 @@ textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:
 .check.on i:after{content:"✓";color:#fff;font-weight:900} .check.need{border-color:var(--err);box-shadow:0 0 16px rgba(248,113,113,.35)}
 .total{display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding:12px 14px;border-radius:14px;background:rgba(168,85,247,.12);border:1px solid rgba(192,132,252,.35)}
 .total b{font-size:22px;font-weight:900;letter-spacing:-.02em} .margin-ok{color:var(--ok)} .margin-bad{color:var(--err)}
+
+/* ===== Дизайн v2: спокойно, без неона — как в программе ===== */
+:root{--acc:#d6a8d8;--bg:#0a0a0b;--card:rgba(255,255,255,.035);--line:rgba(255,255,255,.08);--fg:#ececef;--mut:#8b8b94}
+body{background:radial-gradient(900px 420px at 85% -10%,rgba(214,168,216,.08),transparent 60%),#0a0a0b}
+h1{background:none;-webkit-background-clip:initial;background-clip:initial;color:#ececef;font-weight:600;letter-spacing:-.025em}
+.sec{background:#141416;border:1px solid rgba(255,255,255,.07);box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+.sec>b{font-weight:600;letter-spacing:.04em}
+.sec>b:before{background:#1c1c20;border:1px solid rgba(255,255,255,.1);box-shadow:none;color:#ececef}
+.prod,.chip{background:transparent;border-color:rgba(255,255,255,.1);font-weight:500}
+.sel{background:#ececef!important;color:#0a0a0b!important;border-color:#ececef!important;box-shadow:none!important}
+.sel small{color:#55555d!important}
+.bar i{background:#d6a8d8;box-shadow:none}
+input,textarea{background:#19191c} input:focus,textarea:focus{border-color:rgba(214,168,216,.5);box-shadow:none}
+.note{background:#141416;border:1px solid rgba(214,168,216,.22);box-shadow:none}
+.check.on{box-shadow:none;border-color:rgba(214,168,216,.35)} .check.on i{background:#ececef;border-color:transparent} .check.on i:after{color:#0a0a0b}
+.sw.on{background:#ececef;box-shadow:none} .sw.on:after{background:#0a0a0b}
+.tile.on{box-shadow:none;border-color:rgba(214,168,216,.3)} .step span{color:#d6a8d8} .link{text-shadow:none;color:#d6a8d8}
+.total{background:#19191c;border:1px solid rgba(255,255,255,.08)} .margin-ok{color:#7fd49b} .margin-bad{color:#f28b82}
+#send{background:#ececef;color:#0a0a0b;box-shadow:none}
+::placeholder{color:#5f5f68!important} .check i{border-color:rgba(255,255,255,.22)!important}
 </style>
 </head><body>
 <h1>Стать поставщиком</h1><p class="sub">Расскажи о магазине — владелец посмотрит и откроет доступ. Твои товары будут продавать партнёры.</p>
@@ -86,6 +106,7 @@ textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:
  <div class="check" id="agree"><i></i><span>Согласен: владелец берёт комиссию <b id="fee">—</b> с дроп-цены и проверяет товары перед публикацией</span></div></div>
 <button id="send">Отправить анкету</button>
 <script>
+const plain = t => String(t || '').replace(/^[^\p{L}\p{N}]+/u, '');  // без эмодзи в начале
 const tg = window.Telegram && Telegram.WebApp, $ = id => document.getElementById(id), QS = new URLSearchParams(location.search);
 const esc = s => String(s).replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';');
 // shortcut: копия списка категорий из app.py — страница статичная
@@ -95,11 +116,11 @@ const OPTS = {volume: ['до 20', '20–100', '100–500', '500+'], where: ['А�
 const F = {cats: [], where: [], volume: '', orig: '', ship: '', avito: false, agree: false};
 $('fee').textContent = (QS.get('fee') || '—') + '%';
 if (QS.get('trust')) { $('trust').textContent = QS.get('trust'); $('trust').style.display = ''; }  // факты из базы бота
-$('cats').innerHTML = CATS.map(c => `<span class="chip">${esc(c)}</span>`).join('');
+$('cats').innerHTML = CATS.map(c => `<span class="chip" data-v="${esc(c)}">${esc(plain(c))}</span>`).join('');
 Object.entries(OPTS).forEach(([k, v]) => $(k).innerHTML = v.map(c => `<span class="chip">${esc(c)}</span>`).join(''));
 const toggle = (arr, v) => arr.includes(v) ? arr.splice(arr.indexOf(v), 1) : arr.push(v);
 document.querySelectorAll('.chips').forEach(box => box.onclick = e => {
-  const el = e.target.closest('.chip'); if (!el) return; const v = el.textContent;
+  const el = e.target.closest('.chip'); if (!el) return; const v = el.dataset.v || el.textContent;
   if (box.id === 'cats' || box.id === 'where') { toggle(F[box.id], v); el.classList.toggle('sel'); }
   else { F[box.id] = v; box.querySelectorAll('.sel').forEach(x => x.classList.remove('sel')); el.classList.add('sel'); }
   tg && tg.HapticFeedback.selectionChanged(); check(); });
@@ -120,6 +141,6 @@ function submit() {
   if (tg && tg.sendData) tg.sendData(data); else alert('Открой анкету из Telegram-бота');
 }
 $('send').onclick = submit;
-if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor('#07050c'); tg.setBackgroundColor('#07050c'); } catch (e) {} tg.MainButton.color = '#7c3aed'; tg.MainButton.onClick(submit); }
+if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor('#0a0a0b'); tg.setBackgroundColor('#0a0a0b'); } catch (e) {} tg.MainButton.setParams({color: '#ececef', text_color: '#0a0a0b'}); tg.MainButton.onClick(submit); }
 check();
 </script></body></html>
