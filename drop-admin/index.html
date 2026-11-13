@@ -64,26 +64,6 @@ textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:
 .check.on i:after{content:"✓";color:#fff;font-weight:900} .check.need{border-color:var(--err);box-shadow:0 0 16px rgba(248,113,113,.35)}
 .total{display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding:12px 14px;border-radius:14px;background:rgba(168,85,247,.12);border:1px solid rgba(192,132,252,.35)}
 .total b{font-size:22px;font-weight:900;letter-spacing:-.02em} .margin-ok{color:var(--ok)} .margin-bad{color:var(--err)}
-
-/* ===== Дизайн v2: спокойно, без неона — как в программе ===== */
-:root{--acc:#d6a8d8;--bg:#0a0a0b;--card:rgba(255,255,255,.035);--line:rgba(255,255,255,.08);--fg:#ececef;--mut:#8b8b94}
-body{background:radial-gradient(900px 420px at 85% -10%,rgba(214,168,216,.08),transparent 60%),#0a0a0b}
-h1{background:none;-webkit-background-clip:initial;background-clip:initial;color:#ececef;font-weight:600;letter-spacing:-.025em}
-.sec{background:#141416;border:1px solid rgba(255,255,255,.07);box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
-.sec>b{font-weight:600;letter-spacing:.04em}
-.sec>b:before{background:#1c1c20;border:1px solid rgba(255,255,255,.1);box-shadow:none;color:#ececef}
-.prod,.chip{background:transparent;border-color:rgba(255,255,255,.1);font-weight:500}
-.sel{background:#ececef!important;color:#0a0a0b!important;border-color:#ececef!important;box-shadow:none!important}
-.sel small{color:#55555d!important}
-.bar i{background:#d6a8d8;box-shadow:none}
-input,textarea{background:#19191c} input:focus,textarea:focus{border-color:rgba(214,168,216,.5);box-shadow:none}
-.note{background:#141416;border:1px solid rgba(214,168,216,.22);box-shadow:none}
-.check.on{box-shadow:none;border-color:rgba(214,168,216,.35)} .check.on i{background:#ececef;border-color:transparent} .check.on i:after{color:#0a0a0b}
-.sw.on{background:#ececef;box-shadow:none} .sw.on:after{background:#0a0a0b}
-.tile.on{box-shadow:none;border-color:rgba(214,168,216,.3)} .step span{color:#d6a8d8} .link{text-shadow:none;color:#d6a8d8}
-.total{background:#19191c;border:1px solid rgba(255,255,255,.08)} .margin-ok{color:#7fd49b} .margin-bad{color:#f28b82}
-#send{background:#ececef;color:#0a0a0b;box-shadow:none}
-::placeholder{color:#5f5f68!important} .check i{border-color:rgba(255,255,255,.22)!important}
 </style></head><body>
 <h1>Новый товар</h1><p class="sub">Добавится в каталог для партнёров и выйдет постом в канал</p>
 <div class="bar"><i id="prog"></i></div>
@@ -109,13 +89,12 @@ input,textarea{background:#19191c} input:focus,textarea:focus{border-color:rgba(
 <div class="sec"><b>Описание</b><textarea id="desc" maxlength="700" placeholder="Оригинал, новые, в коробке. Отправка в день заказа."></textarea></div>
 <div class="sec" id="supSec" style="display:none"><b>Откуда отправляешь</b><input id="city" maxlength="40" placeholder="Город, например Москва">
  <p class="hint" id="feeNote"></p>
- <div style="margin-top:10px"><small class="hint" style="display:block;margin:0 0 6px 4px">Куда владелец переводит твою долю (СБП / карта, банк)</small>
+ <div style="margin-top:10px"><small class="hint" style="display:block;margin:0 0 6px 4px">Куда партнёры платят тебе за заказы (СБП / карта, банк)</small>
  <input id="payout" maxlength="120" placeholder="+7 999 000-11-22, Тинькофф"></div></div>
 <div class="sec"><div class="toggle" id="chan"><span>Опубликовать в канал</span><div class="sw on"></div></div></div>
 <p class="hint">Фото пришлёшь боту следующим шагом — можно сразу альбомом.</p>
 <button id="send">Дальше: фото</button>
 <script>
-const plain = t => String(t || '').replace(/^[^\p{L}\p{N}]+/u, '');  // без эмодзи в начале
 const tg = window.Telegram && Telegram.WebApp, $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';');
 // shortcut: копия списка категорий из app.py — страница статичная; поменял категории в программе — обнови и тут
@@ -125,8 +104,8 @@ function grid(g) { const m = g.match(/^(\d+)-(\d+)$/);
   return m ? Array.from({length: +m[2] - +m[1] + 1}, (_, i) => String(+m[1] + i)) : g.split(/[,\s]+/).filter(Boolean); }
 function drawCats() {  // как на Авито: раздел → подкатегория
   const groups = [...new Set(Object.values(CATS).map(c => c[2]))], g = CATS[F.cat][2];
-  $('groups').innerHTML = groups.map(x => `<span class="chip ${x === g ? 'sel' : ''}" data-g="${esc(x)}">${esc(plain(x))}</span>`).join('');
-  $('cats').innerHTML = Object.entries(CATS).filter(([, c]) => c[2] === g).map(([k, [n]]) => `<span class="chip ${k === F.cat ? 'sel' : ''}" data-k="${k}">${esc(plain(n))}</span>`).join('');
+  $('groups').innerHTML = groups.map(x => `<span class="chip ${x === g ? 'sel' : ''}" data-g="${esc(x)}">${esc(x)}</span>`).join('');
+  $('cats').innerHTML = Object.entries(CATS).filter(([, c]) => c[2] === g).map(([k, [n]]) => `<span class="chip ${k === F.cat ? 'sel' : ''}" data-k="${k}">${esc(n)}</span>`).join('');
   $('cats').style.display = Object.values(CATS).filter(c => c[2] === g).length > 1 ? '' : 'none';
   $('sizeHint').textContent = CATS[F.cat][1] ? 'Количество 0 — размер есть в каталоге, но не в наличии.' : 'У этой категории обычно нет размеров — оставь пустым или добавь свои.'; }
 $('groups').onclick = e => { const el = e.target.closest('.chip'); if (!el) return;
@@ -159,7 +138,7 @@ function submit() {
   if (tg && tg.sendData) tg.sendData(data); else alert('Открой форму из Telegram-бота');
 }
 $('send').onclick = submit;
-if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor('#0a0a0b'); tg.setBackgroundColor('#0a0a0b'); } catch (e) {} tg.MainButton.setParams({color: '#ececef', text_color: '#0a0a0b'}); tg.MainButton.onClick(submit); }
+if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor('#07050c'); tg.setBackgroundColor('#07050c'); } catch (e) {} tg.MainButton.color = '#7c3aed'; tg.MainButton.onClick(submit); }
 // ---- калькулятор: ¥ × курс + доставка; курс — с прошлого товара или ЦБ на сегодня
 const QS = new URLSearchParams(location.search), n = id => parseFloat(($(id).value || '').replace(/\s/g, '').replace(',', '.')) || 0;
 const rubs = x => Math.round(x).toLocaleString('ru-RU') + ' ₽';
@@ -176,10 +155,10 @@ function calc() {
   $('marginOut').innerHTML = QS.get('role') === 'supplier' ? '—' : n('price') ? `<span class="${m >= 0 ? 'margin-ok' : 'margin-bad'}">${m >= 0 ? '+' : ''}${rubs(m)}${cost ? ' · ' + Math.round(m / cost * 100) + '%' : ''}</span>` : '—';
 }
 ['cny', 'rate', 'kg', 'd1', 'd2', 'cost', 'price'].forEach(k => $(k).addEventListener('input', calc));
-if (QS.get('role') === 'supplier') {  // поставщик: свой город, комиссия владельца, публикация — после проверки владельцем
+if (QS.get('role') === 'supplier') {  // поставщик: свой город, реквизиты для партнёров, публикация — после проверки владельцем
   $('supSec').style.display = ''; $('chan').closest('.sec').style.display = 'none'; $('city').value = QS.get('city') || '';
   $('costSec').style.display = 'none'; $('payout').value = QS.get('pay') || '';  // себестоимость поставщика тебе не нужна
-  $('feeNote').textContent = `Комиссия владельца — ${QS.get('fee') || 0}% от дроп-цены. Товар появится после его проверки.`;
+  $('feeNote').textContent = `Комиссии с продаж нет — только подписка ${QS.get('sub') || 0} ₽ в месяц. Партнёр платит тебе дроп-цену напрямую. Товар появится после проверки владельцем.`;
   document.querySelector('.sub').textContent = 'Владелец проверит товар и опубликует в канале';
   $('city').addEventListener('input', () => document.querySelectorAll('.city').forEach(e => e.textContent = $('city').value || 'городу'));
 }
