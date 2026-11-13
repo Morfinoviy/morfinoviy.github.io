@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Новый заказ</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--acc:#a855f7;--acc2:#7c3aed;--bg:var(--tg-theme-bg-color,#0b0b0d);--fg:var(--tg-theme-text-color,#f5f5f7);
+ --mut:var(--tg-theme-hint-color,#8b8b94);--card:var(--tg-theme-secondary-bg-color,#17171a);--line:rgba(127,127,127,.18);--err:#ef4444}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font:15px/1.45 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--fg);padding:18px 16px 40px}
+h1{font-size:26px;font-weight:800;letter-spacing:-.02em} .sub{color:var(--mut);margin-top:4px}
+.sec{margin-top:22px} .sec>b{display:block;font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px}
+.prods{display:flex;flex-direction:column;gap:8px}
+.prod{padding:14px 16px;border-radius:16px;background:var(--card);border:1.5px solid transparent;font-weight:600;cursor:pointer;transition:.25s}
+.prod small{display:block;font-weight:400;color:var(--mut);margin-top:2px}
+.sel{background:rgba(168,85,247,.2)!important;border-color:var(--acc)!important;box-shadow:0 0 0 4px rgba(168,85,247,.15),0 0 22px rgba(168,85,247,.25)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:10px 16px;border-radius:999px;background:var(--card);border:1.5px solid transparent;font-weight:600;cursor:pointer;transition:.25s;user-select:none}
+input,textarea{width:100%;font:inherit;color:var(--fg);background:var(--card);border:1.5px solid transparent;border-radius:14px;padding:13px 14px;outline:none;transition:.25s}
+input:focus,textarea:focus{border-color:var(--acc)} textarea{min-height:70px;resize:vertical}
+input+input,input+textarea{margin-top:8px}
+.hint{color:var(--mut);font-size:13px;margin-top:8px} .bad{border-color:var(--err)!important}
+.empty{color:var(--mut);padding:30px 0;text-align:center}
+#send{display:none;margin-top:26px;width:100%;height:52px;border:0;border-radius:16px;color:#fff;font:700 16px inherit;
+ background:linear-gradient(90deg,var(--acc2),var(--acc))}
+</style></head><body>
+<h1>Новый заказ</h1><p class="sub">Заполни анкету — заказ уйдёт владельцу</p>
+<div class="sec"><b>Товар</b><div class="prods" id="prods"></div></div>
+<div class="sec" id="sizeSec" style="display:none"><b>Размер</b><div class="chips" id="sizes"></div></div>
+<div class="sec"><b>Доставка</b><div class="chips" id="dels"></div></div>
+<div class="sec"><b>Получатель</b>
+ <input id="fio" placeholder="ФИО" autocomplete="name" maxlength="120">
+ <input id="phone" placeholder="Телефон" inputmode="tel" autocomplete="tel" maxlength="30">
+</div>
+<div class="sec"><b>Адрес или пункт выдачи</b><textarea id="address" placeholder="Город, адрес ПВЗ или постамата" maxlength="300"></textarea></div>
+<div class="sec"><b>Твоя цена продажи, ₽</b><input id="sale" inputmode="decimal" placeholder="Необязательно — для подсчёта твоего заработка" maxlength="12"></div>
+<div class="sec"><b>Комментарий</b><input id="comment" placeholder="Необязательно" maxlength="500">
+ <p class="hint">Фото QR-кода для отправки бот попросит сразу после анкеты.</p></div>
+<button id="send">Отправить заказ</button>
+<script>
+const tg = window.Telegram && Telegram.WebApp, $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';');
+const DELIVERY = ["Авито Доставка", "СДЭК", "Boxberry", "5Post", "Почта России", "Яндекс Доставка", "Другое"];
+// каталог передаёт бот в адресе: ?c=base64url([[индекс, название, [размеры в наличии]], ...])
+let cat = [];
+try { const c = new URLSearchParams(location.search).get('c').replace(/-/g, '+').replace(/_/g, '/');
+  cat = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(c), ch => ch.charCodeAt(0)))); } catch (e) { cat = []; }
+const F = {p: null, size: '', delivery: ''};
+
+function pick(box, el) { box.querySelectorAll('.sel').forEach(x => x.classList.remove('sel')); el.classList.add('sel'); tg && tg.HapticFeedback.selectionChanged(); }
+$('prods').innerHTML = cat.map(([i, n, s], k) => `<div class="prod" data-k="${k}">${esc(n)}<small>${s.length ? 'Размеры: ' + s.map(esc).join(', ') : 'Без размера'}</small></div>`).join('')
+  || '<div class="empty">Сейчас нет товаров в наличии</div>';
+$('prods').onclick = e => { const el = e.target.closest('.prod'); if (!el) return; pick($('prods'), el);
+  const [i, n, s] = cat[+el.dataset.k]; F.p = i; F.name = n; F.size = '';
+  $('sizeSec').style.display = s.length ? '' : 'none';
+  $('sizes').innerHTML = s.map(x => `<span class="chip">${esc(x)}</span>`).join(''); F.sizes = s; check(); };
+$('sizes').onclick = e => { const el = e.target.closest('.chip'); if (!el) return; pick($('sizes'), el); F.size = el.textContent; check(); };
+$('dels').innerHTML = DELIVERY.map(x => `<span class="chip">${x}</span>`).join('');
+$('dels').onclick = e => { const el = e.target.closest('.chip'); if (!el) return; pick($('dels'), el); F.delivery = el.textContent; check(); };
+['fio', 'phone', 'address', 'comment'].forEach(k => $(k).oninput = () => { $(k).classList.remove('bad'); check(); });
+
+const ok = () => F.p !== null && (!F.sizes.length || F.size) && F.delivery && $('fio').value.trim().length > 1
+  && $('phone').value.replace(/\D/g, '').length >= 10 && $('address').value.trim().length > 3;
+function check() { if (!tg) return $('send').style.display = 'block';
+  ok() ? tg.MainButton.setParams({text: 'Отправить заказ', is_active: true, is_visible: true}) : tg.MainButton.hide(); }
+function submit() {
+  if (!ok()) { ['fio', 'address'].forEach(k => $(k).value.trim() || $(k).classList.add('bad'));
+    if ($('phone').value.replace(/\D/g, '').length < 10) $('phone').classList.add('bad'); return; }
+  const data = JSON.stringify({p: F.p, name: F.name, size: F.size, delivery: F.delivery, fio: $('fio').value.trim(),
+    phone: $('phone').value.trim(), address: $('address').value.trim(), comment: $('comment').value.trim(), sale: $('sale').value.trim()});
+  if (tg && tg.sendData) tg.sendData(data); else alert('Открой анкету из Telegram-бота');
+}
+$('send').onclick = submit;
+if (tg) { tg.ready(); tg.expand(); tg.MainButton.color = '#7c3aed'; tg.MainButton.onClick(submit); }
+check();
+</script></body></html>
