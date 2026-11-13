@@ -71,8 +71,8 @@ textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:
 <div class="sec"><b>Категория</b><div class="chips" id="cats"></div></div>
 <div class="sec" id="sizeSec"><b>Размеры и количество</b>
  <div id="sizes"></div><span class="link" id="addSize">+ размер</span>
- <p class="hint">Количество 0 — размер есть в каталоге, но не в наличии.</p></div>
-<div class="sec"><b>Себестоимость</b><div class="grid3" style="grid-template-columns:1fr 1fr">
+ <p class="hint" id="sizeHint"></p></div>
+<div class="sec" id="costSec"><b>Себестоимость</b><div class="grid3" style="grid-template-columns:1fr 1fr">
  <div><small>Цена, ¥</small><input id="cny" inputmode="decimal" placeholder="260"></div>
  <div><small>Курс ¥ → ₽ <span id="rateSrc"></span></small><input id="rate" inputmode="decimal" placeholder="12.5"></div>
  <div><small>Вес с упаковкой, кг</small><input id="kg" inputmode="decimal" placeholder="1.2"></div>
@@ -88,20 +88,22 @@ textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:
  <p class="hint">Дроп-цену и рекомендуемую увидят в канале. Себестоимость — только ты.</p></div>
 <div class="sec"><b>Описание</b><textarea id="desc" maxlength="700" placeholder="Оригинал, новые, в коробке. Отправка в день заказа."></textarea></div>
 <div class="sec" id="supSec" style="display:none"><b>Откуда отправляешь</b><input id="city" maxlength="40" placeholder="Город, например Москва">
- <p class="hint" id="feeNote"></p></div>
+ <p class="hint" id="feeNote"></p>
+ <div style="margin-top:10px"><small class="hint" style="display:block;margin:0 0 6px 4px">Куда владелец переводит твою долю (СБП / карта, банк)</small>
+ <input id="payout" maxlength="120" placeholder="+7 999 000-11-22, Тинькофф"></div></div>
 <div class="sec"><div class="toggle" id="chan"><span>Опубликовать в канал</span><div class="sw on"></div></div></div>
 <p class="hint">Фото пришлёшь боту следующим шагом — можно сразу альбомом.</p>
 <button id="send">Дальше: фото</button>
 <script>
 const tg = window.Telegram && Telegram.WebApp, $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';');
-const CATS = {shoes: ['Обувь', '36-46'], tops: ['Кофты и свитера', 'XS, S, M, L, XL, XXL'], jeans: ['Джинсы', '28, 29, 30, 31, 32, 33, 34, 36'],
-  belts: ['Ремни', ''], other: ['Другое', '']};
+// shortcut: копия списка категорий из app.py — страница статичная; поменял категории в программе — обнови и тут
+const CATS = {"shoes": ["👟 Обувь", "36-46"], "tshirts": ["👕 Футболки и поло", "XS, S, M, L, XL, XXL"], "hoodies": ["🧥 Худи и свитшоты", "XS, S, M, L, XL, XXL"], "tops": ["🧶 Кофты и свитера", "XS, S, M, L, XL, XXL"], "jackets": ["🧥 Куртки и пуховики", "XS, S, M, L, XL, XXL"], "shirts": ["👔 Рубашки", "XS, S, M, L, XL, XXL"], "jeans": ["👖 Джинсы", "28, 29, 30, 31, 32, 33, 34, 36"], "pants": ["👖 Брюки и штаны", "XS, S, M, L, XL, XXL"], "shorts": ["🩳 Шорты", "XS, S, M, L, XL, XXL"], "suits": ["🏃 Спортивные костюмы", "XS, S, M, L, XL, XXL"], "dresses": ["👗 Платья и юбки", "XS, S, M, L, XL"], "underwear": ["🧦 Бельё и носки", "S, M, L, XL"], "belts": ["🎗 Ремни", ""], "bags": ["👜 Сумки и рюкзаки", ""], "wallets": ["👛 Кошельки и картхолдеры", ""], "hats": ["🧢 Головные уборы", ""], "glasses": ["🕶 Очки", ""], "watches": ["⌚ Часы", ""], "jewelry": ["💍 Украшения", ""], "scarves": ["🧣 Шарфы и перчатки", ""], "perfume": ["🌸 Парфюм", ""], "beauty": ["💄 Косметика и уход", ""], "phones": ["📱 Смартфоны", ""], "audio": ["🎧 Наушники и колонки", ""], "gadgets": ["🔌 Гаджеты и аксессуары", ""], "home": ["🏠 Дом и интерьер", ""], "kids": ["🧸 Детское и игрушки", ""], "sport": ["⚽ Спорт и отдых", ""], "other": ["📦 Другое", ""]};
 const F = {cat: 'shoes', sizes: [], channel: true};
 function grid(g) { const m = g.match(/^(\d+)-(\d+)$/);
   return m ? Array.from({length: +m[2] - +m[1] + 1}, (_, i) => String(+m[1] + i)) : g.split(/[,\s]+/).filter(Boolean); }
 function drawCats() { $('cats').innerHTML = Object.entries(CATS).map(([k, [n]]) => `<span class="chip ${k === F.cat ? 'sel' : ''}" data-k="${k}">${n}</span>`).join('');
-  $('sizeSec').style.display = F.cat === 'belts' ? 'none' : ''; }
+  $('sizeHint').textContent = CATS[F.cat][1] ? 'Количество 0 — размер есть в каталоге, но не в наличии.' : 'У этой категории обычно нет размеров — оставь пустым или добавь свои.'; }
 $('cats').onclick = e => { const el = e.target.closest('.chip'); if (!el) return; F.cat = el.dataset.k;
   F.sizes = grid(CATS[F.cat][1]).map(s => [s, 1]); drawCats(); drawSizes(); tg && tg.HapticFeedback.selectionChanged(); };
 function drawSizes() { $('sizes').innerHTML = F.sizes.map(([s, q], i) => `<div class="tile ${q > 0 ? 'on' : ''}"><div class="x" data-del="${i}">×</div>
@@ -118,14 +120,14 @@ $('name').oninput = () => { $('name').classList.remove('bad'); check(); };
 ['price', 'desc'].forEach(k => $(k).addEventListener('input', check));
 const ok = () => $('name').value.trim().length > 1;
 function check() {
-  const parts = [$('name').value.trim().length > 1, F.cat === 'belts' || F.sizes.some(r => String(r[0]).trim()), +$('price').value.replace(',', '.') > 0, $('desc').value.trim().length > 3];
+  const parts = [$('name').value.trim().length > 1, !CATS[F.cat][1] || F.sizes.some(r => String(r[0]).trim()), +$('price').value.replace(',', '.') > 0, $('desc').value.trim().length > 3];
   $('prog').style.width = parts.filter(Boolean).length / parts.length * 100 + '%';
   if (!tg) return $('send').style.display = 'block';
   ok() ? tg.MainButton.setParams({text: 'Дальше: фото', is_active: true, is_visible: true}) : tg.MainButton.hide(); }
 function submit() {
   if (!ok()) return $('name').classList.add('bad');
-  const data = JSON.stringify({kind: 'post', name: $('name').value.trim(), cat: F.cat, sizes: F.cat === 'belts' ? [] : F.sizes.filter(r => String(r[0]).trim()),
-    price: $('price').value, cost: $('cost').value, cny: $('cny').value, rate: $('rate').value, kg: $('kg').value, d1: $('d1').value, d2: $('d2').value, city: $('city').value.trim(), retail: $('retail').value, desc: $('desc').value.trim(), channel: F.channel});
+  const data = JSON.stringify({kind: 'post', name: $('name').value.trim(), cat: F.cat, sizes: F.sizes.filter(r => String(r[0]).trim()),
+    price: $('price').value, cost: $('cost').value, cny: $('cny').value, rate: $('rate').value, kg: $('kg').value, d1: $('d1').value, d2: $('d2').value, city: $('city').value.trim(), payout: $('payout').value.trim(), retail: $('retail').value, desc: $('desc').value.trim(), channel: F.channel});
   if (tg && tg.sendData) tg.sendData(data); else alert('Открой форму из Telegram-бота');
 }
 $('send').onclick = submit;
@@ -143,11 +145,12 @@ function calc() {
   $('shipOut').textContent = n('kg') ? `Доставка: ${n('kg')} кг × (${n('d1')} + ${n('d2')}) ₽ = ${rubs(ship)}` : 'Укажи вес — посчитаю доставку';
   $('cost').disabled = fromCny; if (fromCny) $('cost').value = Math.round(cost);
   $('costOut').textContent = rubs(cost); const m = n('price') - cost;
-  $('marginOut').innerHTML = n('price') ? `<span class="${m >= 0 ? 'margin-ok' : 'margin-bad'}">${m >= 0 ? '+' : ''}${rubs(m)}${cost ? ' · ' + Math.round(m / cost * 100) + '%' : ''}</span>` : '—';
+  $('marginOut').innerHTML = QS.get('role') === 'supplier' ? '—' : n('price') ? `<span class="${m >= 0 ? 'margin-ok' : 'margin-bad'}">${m >= 0 ? '+' : ''}${rubs(m)}${cost ? ' · ' + Math.round(m / cost * 100) + '%' : ''}</span>` : '—';
 }
 ['cny', 'rate', 'kg', 'd1', 'd2', 'cost', 'price'].forEach(k => $(k).addEventListener('input', calc));
 if (QS.get('role') === 'supplier') {  // поставщик: свой город, комиссия владельца, публикация — после проверки владельцем
   $('supSec').style.display = ''; $('chan').closest('.sec').style.display = 'none'; $('city').value = QS.get('city') || '';
+  $('costSec').style.display = 'none'; $('payout').value = QS.get('pay') || '';  // себестоимость поставщика тебе не нужна
   $('feeNote').textContent = `Комиссия владельца — ${QS.get('fee') || 0}% от дроп-цены. Товар появится после его проверки.`;
   document.querySelector('.sub').textContent = 'Владелец проверит товар и опубликует в канале';
   $('city').addEventListener('input', () => document.querySelectorAll('.city').forEach(e => e.textContent = $('city').value || 'городу'));
