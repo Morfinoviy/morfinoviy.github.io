@@ -4,27 +4,53 @@
 <title>Новый заказ</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-:root{--acc:#a855f7;--acc2:#7c3aed;--bg:var(--tg-theme-bg-color,#0b0b0d);--fg:var(--tg-theme-text-color,#f5f5f7);
- --mut:var(--tg-theme-hint-color,#8b8b94);--card:var(--tg-theme-secondary-bg-color,#17171a);--line:rgba(127,127,127,.18);--err:#ef4444}
+:root{--acc:#a855f7;--acc2:#7c3aed;--bg:#07050c;--fg:#f5f3ff;--mut:#a49cb8;--card:rgba(255,255,255,.05);--line:rgba(255,255,255,.1);--err:#f87171;--ok:#22c55e;--ease:cubic-bezier(.22,1,.36,1)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font:15px/1.45 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--fg);padding:18px 16px 40px}
-h1{font-size:26px;font-weight:800;letter-spacing:-.02em} .sub{color:var(--mut);margin-top:4px}
-.sec{margin-top:22px} .sec>b{display:block;font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px}
+html{background:var(--bg)}
+body{font:15px/1.45 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif;color:var(--fg);padding:22px 14px 70px;min-height:100vh;counter-reset:s;
+ background:radial-gradient(120% 55% at 85% -10%,rgba(168,85,247,.38),transparent 60%),radial-gradient(90% 45% at -15% 45%,rgba(124,58,237,.2),transparent 60%),var(--bg);background-attachment:fixed}
+h1{font-size:30px;font-weight:900;letter-spacing:-.03em;background:linear-gradient(90deg,#fff 30%,#d8b4fe);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--mut);margin-top:4px}
+.bar{height:6px;border-radius:6px;background:rgba(255,255,255,.08);margin-top:16px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,var(--acc2),#c084fc);box-shadow:0 0 14px var(--acc);transition:width .6s var(--ease)}
+.sec{margin-top:14px;padding:16px;border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.025));border:1px solid var(--line);
+ backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 12px 34px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06);animation:up .6s var(--ease) both}
+.sec:nth-of-type(2){animation-delay:.05s}.sec:nth-of-type(3){animation-delay:.1s}.sec:nth-of-type(4){animation-delay:.15s}.sec:nth-of-type(5){animation-delay:.2s}.sec:nth-of-type(n+6){animation-delay:.25s}
+@keyframes up{from{opacity:0;transform:translateY(14px)}}
+.sec>b{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;font-weight:700}
+.sec>b:before{counter-increment:s;content:counter(s);flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;color:#fff;
+ background:linear-gradient(135deg,#c084fc,var(--acc2));box-shadow:0 0 12px rgba(168,85,247,.7)}
 .prods{display:flex;flex-direction:column;gap:8px}
-.prod{padding:14px 16px;border-radius:16px;background:var(--card);border:1.5px solid transparent;font-weight:600;cursor:pointer;transition:.25s}
-.prod small{display:block;font-weight:400;color:var(--mut);margin-top:2px}
-.sel{background:rgba(168,85,247,.2)!important;border-color:var(--acc)!important;box-shadow:0 0 0 4px rgba(168,85,247,.15),0 0 22px rgba(168,85,247,.25)}
+.prod{padding:14px 16px;border-radius:16px;background:var(--card);border:1px solid var(--line);font-weight:700;cursor:pointer;transition:.3s var(--ease)}
+.prod small{display:block;font-weight:400;color:var(--mut);margin-top:3px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{padding:10px 16px;border-radius:999px;background:var(--card);border:1.5px solid transparent;font-weight:600;cursor:pointer;transition:.25s;user-select:none}
-input,textarea{width:100%;font:inherit;color:var(--fg);background:var(--card);border:1.5px solid transparent;border-radius:14px;padding:13px 14px;outline:none;transition:.25s}
-input:focus,textarea:focus{border-color:var(--acc)} textarea{min-height:70px;resize:vertical}
-input+input,input+textarea{margin-top:8px}
-.hint{color:var(--mut);font-size:13px;margin-top:8px} .bad{border-color:var(--err)!important}
-.empty{color:var(--mut);padding:30px 0;text-align:center}
-#send{display:none;margin-top:26px;width:100%;height:52px;border:0;border-radius:16px;color:#fff;font:700 16px inherit;
- background:linear-gradient(90deg,var(--acc2),var(--acc))}
+.chip{padding:10px 16px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-weight:600;cursor:pointer;transition:.3s var(--ease);user-select:none}
+.prod:active,.chip:active{transform:scale(.96)}
+.sel{background:linear-gradient(90deg,rgba(124,58,237,.6),rgba(168,85,247,.35))!important;border-color:rgba(192,132,252,.9)!important;color:#fff!important;
+ box-shadow:0 0 0 1px rgba(192,132,252,.35),0 0 26px rgba(168,85,247,.55),inset 0 0 14px rgba(255,255,255,.1)!important}
+.sel small{color:#e9d5ff}
+input,textarea{width:100%;font:inherit;color:var(--fg);background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:14px;padding:13px 14px;outline:none;transition:.3s var(--ease)}
+input::placeholder,textarea::placeholder{color:#6f6782}
+input:focus,textarea:focus{border-color:rgba(192,132,252,.8);box-shadow:0 0 0 4px rgba(168,85,247,.18),0 0 20px rgba(168,85,247,.25)}
+textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:8px}
+.hint{color:var(--mut);font-size:13px;margin-top:10px} .bad{border-color:var(--err)!important;box-shadow:0 0 16px rgba(248,113,113,.35)!important}
+.empty{color:var(--mut);padding:26px 0;text-align:center}
+#send{display:none;margin-top:22px;width:100%;height:54px;border:0;border-radius:18px;color:#fff;font:800 16px inherit;
+ background:linear-gradient(90deg,var(--acc2),#c084fc);box-shadow:0 0 30px rgba(168,85,247,.55)}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px} .grid3 small{display:block;color:var(--mut);font-size:12px;margin:0 0 4px 4px}
+.srow{display:flex;gap:8px;align-items:center;margin-top:8px} .srow input{flex:1}
+.step{display:flex;align-items:center;background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.step span{width:40px;text-align:center;font-size:20px;color:#c084fc;cursor:pointer;user-select:none;padding:10px 0}
+.step input{width:50px;text-align:center;background:none;border:0;box-shadow:none!important;padding:12px 0}
+.x{width:36px;height:36px;display:grid;place-items:center;color:var(--mut);font-size:20px;cursor:pointer}
+.link{color:#c084fc;font-weight:700;margin-top:12px;display:inline-block;cursor:pointer;text-shadow:0 0 12px rgba(168,85,247,.6)}
+.toggle{display:flex;align-items:center;justify-content:space-between;font-weight:600;cursor:pointer}
+.sw{width:52px;height:30px;border-radius:999px;background:rgba(255,255,255,.12);position:relative;transition:.35s var(--ease);flex:none}
+.sw:after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.35s var(--ease);box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.sw.on{background:linear-gradient(90deg,var(--acc2),#c084fc);box-shadow:0 0 22px rgba(168,85,247,.65)} .sw.on:after{transform:translateX(22px)}
 </style></head><body>
 <h1>Новый заказ</h1><p class="sub">Заполни анкету — заказ уйдёт владельцу</p>
+<div class="bar"><i id="prog"></i></div>
 <div class="sec"><b>Товар</b><div class="prods" id="prods"></div></div>
 <div class="sec" id="sizeSec" style="display:none"><b>Размер</b><div class="chips" id="sizes"></div></div>
 <div class="sec"><b>Доставка</b><div class="chips" id="dels"></div></div>
@@ -61,7 +87,11 @@ $('dels').onclick = e => { const el = e.target.closest('.chip'); if (!el) return
 
 const ok = () => F.p !== null && (!F.sizes.length || F.size) && F.delivery && $('fio').value.trim().length > 1
   && $('phone').value.replace(/\D/g, '').length >= 10 && $('address').value.trim().length > 3;
-function check() { if (!tg) return $('send').style.display = 'block';
+function check() {
+  const parts = [F.p !== null, F.p !== null && (!F.sizes.length || F.size), F.delivery, $('fio').value.trim().length > 1,
+    $('phone').value.replace(/\D/g, '').length >= 10, $('address').value.trim().length > 3];
+  $('prog').style.width = parts.filter(Boolean).length / parts.length * 100 + '%';
+  if (!tg) return $('send').style.display = 'block';
   ok() ? tg.MainButton.setParams({text: 'Отправить заказ', is_active: true, is_visible: true}) : tg.MainButton.hide(); }
 function submit() {
   if (!ok()) { ['fio', 'address'].forEach(k => $(k).value.trim() || $(k).classList.add('bad'));
@@ -71,6 +101,6 @@ function submit() {
   if (tg && tg.sendData) tg.sendData(data); else alert('Открой анкету из Telegram-бота');
 }
 $('send').onclick = submit;
-if (tg) { tg.ready(); tg.expand(); tg.MainButton.color = '#7c3aed'; tg.MainButton.onClick(submit); }
+if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor('#07050c'); tg.setBackgroundColor('#07050c'); } catch (e) {} tg.MainButton.color = '#7c3aed'; tg.MainButton.onClick(submit); }
 check();
 </script></body></html>
