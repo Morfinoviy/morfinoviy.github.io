@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Стать поставщиком</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--acc:#a855f7;--acc2:#7c3aed;--bg:#07050c;--fg:#f5f3ff;--mut:#a49cb8;--card:rgba(255,255,255,.05);--line:rgba(255,255,255,.1);--err:#f87171;--ok:#22c55e;--ease:cubic-bezier(.22,1,.36,1)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{font:15px/1.45 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif;color:var(--fg);padding:22px 14px 70px;min-height:100vh;counter-reset:s;
+ background:radial-gradient(120% 55% at 85% -10%,rgba(168,85,247,.38),transparent 60%),radial-gradient(90% 45% at -15% 45%,rgba(124,58,237,.2),transparent 60%),var(--bg);background-attachment:fixed}
+h1{font-size:30px;font-weight:900;letter-spacing:-.03em;background:linear-gradient(90deg,#fff 30%,#d8b4fe);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--mut);margin-top:4px}
+.bar{height:6px;border-radius:6px;background:rgba(255,255,255,.08);margin-top:16px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,var(--acc2),#c084fc);box-shadow:0 0 14px var(--acc);transition:width .6s var(--ease)}
+.sec{margin-top:14px;padding:16px;border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.025));border:1px solid var(--line);
+ backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 12px 34px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06);animation:up .6s var(--ease) both}
+.sec:nth-of-type(2){animation-delay:.05s}.sec:nth-of-type(3){animation-delay:.1s}.sec:nth-of-type(4){animation-delay:.15s}.sec:nth-of-type(5){animation-delay:.2s}.sec:nth-of-type(n+6){animation-delay:.25s}
+@keyframes up{from{opacity:0;transform:translateY(14px)}}
+.sec>b{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;font-weight:700}
+.sec>b:before{counter-increment:s;content:counter(s);flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;color:#fff;
+ background:linear-gradient(135deg,#c084fc,var(--acc2));box-shadow:0 0 12px rgba(168,85,247,.7)}
+.prods{display:flex;flex-direction:column;gap:8px}
+.prod{padding:14px 16px;border-radius:16px;background:var(--card);border:1px solid var(--line);font-weight:700;cursor:pointer;transition:.3s var(--ease)}
+.prod small{display:block;font-weight:400;color:var(--mut);margin-top:3px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:10px 16px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-weight:600;cursor:pointer;transition:.3s var(--ease);user-select:none}
+.prod:active,.chip:active{transform:scale(.96)}
+.sel{background:linear-gradient(90deg,rgba(124,58,237,.6),rgba(168,85,247,.35))!important;border-color:rgba(192,132,252,.9)!important;color:#fff!important;
+ box-shadow:0 0 0 1px rgba(192,132,252,.35),0 0 26px rgba(168,85,247,.55),inset 0 0 14px rgba(255,255,255,.1)!important}
+.sel small{color:#e9d5ff}
+input,textarea{width:100%;font:inherit;color:var(--fg);background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:14px;padding:13px 14px;outline:none;transition:.3s var(--ease)}
+input::placeholder,textarea::placeholder{color:#6f6782}
+input:focus,textarea:focus{border-color:rgba(192,132,252,.8);box-shadow:0 0 0 4px rgba(168,85,247,.18),0 0 20px rgba(168,85,247,.25)}
+textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:8px}
+.hint{color:var(--mut);font-size:13px;margin-top:10px} .bad{border-color:var(--err)!important;box-shadow:0 0 16px rgba(248,113,113,.35)!important}
+.empty{color:var(--mut);padding:26px 0;text-align:center}
+#send{display:none;margin-top:22px;width:100%;height:54px;border:0;border-radius:18px;color:#fff;font:800 16px inherit;
+ background:linear-gradient(90deg,var(--acc2),#c084fc);box-shadow:0 0 30px rgba(168,85,247,.55)}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px} .grid3 small{display:block;color:var(--mut);font-size:12px;margin:0 0 4px 4px}
+.srow{display:flex;gap:8px;align-items:center;margin-top:8px} .srow input{flex:1}
+.step{display:flex;align-items:center;background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.step span{width:40px;text-align:center;font-size:20px;color:#c084fc;cursor:pointer;user-select:none;padding:10px 0}
+.step input{width:50px;text-align:center;background:none;border:0;box-shadow:none!important;padding:12px 0}
+.x{width:36px;height:36px;display:grid;place-items:center;color:var(--mut);font-size:20px;cursor:pointer}
+.link{color:#c084fc;font-weight:700;margin-top:12px;display:inline-block;cursor:pointer;text-shadow:0 0 12px rgba(168,85,247,.6)}
+.toggle{display:flex;align-items:center;justify-content:space-between;font-weight:600;cursor:pointer}
+.sw{width:52px;height:30px;border-radius:999px;background:rgba(255,255,255,.12);position:relative;transition:.35s var(--ease);flex:none}
+.sw:after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.35s var(--ease);box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.sw.on{background:linear-gradient(90deg,var(--acc2),#c084fc);box-shadow:0 0 22px rgba(168,85,247,.65)} .sw.on:after{transform:translateX(22px)}
+#sizes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tile{position:relative;padding:10px 6px 8px;border-radius:16px;background:rgba(0,0,0,.25);border:1px solid var(--line);text-align:center;transition:.3s var(--ease)}
+.tile.on{border-color:rgba(192,132,252,.45);box-shadow:0 0 18px rgba(168,85,247,.18)}
+.tile .sz{background:none;border:0;text-align:center;font-weight:800;font-size:18px;padding:2px 0 6px;box-shadow:none!important}
+.tile .step{justify-content:space-between} .tile .step span{width:30px;padding:6px 0} .tile .step input{width:30px;padding:6px 0;font-size:14px}
+.tile .x{position:absolute;top:0;right:0;width:26px;height:26px;font-size:15px}
+.note{margin-top:14px;padding:14px 16px;border-radius:18px;background:linear-gradient(135deg,rgba(124,58,237,.35),rgba(168,85,247,.12));
+ border:1px solid rgba(192,132,252,.45);box-shadow:0 0 26px rgba(168,85,247,.25);font-size:14px;animation:up .6s var(--ease) both}
+.note b{display:block;font-size:15px;margin-bottom:4px} .note details{margin-top:8px;color:#e9d5ff} .note summary{cursor:pointer;color:#d8b4fe;font-weight:700}
+.note ol{margin:8px 0 0 18px} .note li{margin-top:4px}
+.check{display:flex;gap:12px;align-items:flex-start;margin-top:12px;padding:12px 14px;border-radius:14px;background:rgba(0,0,0,.28);border:1px solid var(--line);cursor:pointer;transition:.3s var(--ease)}
+.check i{flex:none;width:24px;height:24px;border-radius:8px;border:2px solid rgba(192,132,252,.6);display:grid;place-items:center;font-style:normal;transition:.3s var(--ease)}
+.check.on{border-color:rgba(192,132,252,.8);box-shadow:0 0 22px rgba(168,85,247,.35)} .check.on i{background:linear-gradient(135deg,#c084fc,var(--acc2));border-color:transparent}
+.check.on i:after{content:"✓";color:#fff;font-weight:900} .check.need{border-color:var(--err);box-shadow:0 0 16px rgba(248,113,113,.35)}
+.total{display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding:12px 14px;border-radius:14px;background:rgba(168,85,247,.12);border:1px solid rgba(192,132,252,.35)}
+.total b{font-size:22px;font-weight:900;letter-spacing:-.02em} .margin-ok{color:var(--ok)} .margin-bad{color:var(--err)}
+</style>
+</head><body>
+<h1>Стать поставщиком</h1><p class="sub">Расскажи о магазине — владелец посмотрит и откроет доступ. Твои товары будут продавать партнёры.</p>
+<div class="bar"><i id="prog"></i></div>
+<div class="sec"><b>Магазин</b><input id="shop" maxlength="80" placeholder="Название магазина или бренда">
+ <input id="link" maxlength="200" placeholder="Ссылка на магазин, канал или Авито — необязательно"></div>
+<div class="sec"><b>Контакты</b><input id="person" maxlength="80" placeholder="Как к тебе обращаться">
+ <input id="phone" inputmode="tel" maxlength="30" placeholder="Телефон"></div>
+<div class="sec"><b>Откуда отправляешь</b><input id="city" maxlength="40" placeholder="Город, например Москва"></div>
+<div class="sec"><b>Что продаёшь</b><div class="chips" id="cats"></div><p class="hint">Можно выбрать несколько</p></div>
+<div class="sec"><b>Сколько товаров</b><div class="chips" data-one="volume" id="volume"></div></div>
+<div class="sec"><b>Где продаёшь сейчас</b><div class="chips" data-many="where" id="where"></div></div>
+<div class="sec"><b>Товар</b><div class="chips" data-one="orig" id="orig"></div></div>
+<div class="sec"><b>Отправка после оплаты</b><div class="chips" data-one="ship" id="ship"></div>
+ <div class="check" id="avito" style="margin-top:12px"><i></i><span>Умею отправлять через Авито Доставку (по QR-коду)</span></div></div>
+<div class="sec"><b>Куда выплачивать</b><input id="payout" maxlength="120" placeholder="СБП: +7 999 000-11-22, Тинькофф — или номер карты">
+ <p class="hint">Сюда владелец будет переводить твою долю с каждой продажи.</p></div>
+<div class="sec"><b>Комментарий</b><textarea id="comment" maxlength="500" placeholder="Бренды, особенности, условия — всё, что важно знать"></textarea>
+ <div class="check" id="agree"><i></i><span>Согласен: владелец берёт комиссию <b id="fee">—</b> с дроп-цены и проверяет товары перед публикацией</span></div></div>
+<button id="send">Отправить анкету</button>
+<script>
+const tg = window.Telegram && Telegram.WebApp, $ = id => document.getElementById(id), QS = new URLSearchParams(location.search);
+const esc = s => String(s).replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';');
+// shortcut: копия списка категорий из app.py — страница статичная
+const CATS = ["👟 Обувь", "👕 Футболки и поло", "🧥 Худи и свитшоты", "🧶 Кофты и свитера", "🧥 Куртки и пуховики", "👔 Рубашки", "👖 Джинсы", "👖 Брюки и штаны", "🩳 Шорты", "🏃 Спортивные костюмы", "👗 Платья и юбки", "🧦 Бельё и носки", "🎗 Ремни", "👜 Сумки и рюкзаки", "👛 Кошельки и картхолдеры", "🧢 Головные уборы", "🕶 Очки", "⌚ Часы", "💍 Украшения", "🧣 Шарфы и перчатки", "🌸 Парфюм", "💄 Косметика и уход", "📱 Смартфоны", "🎧 Наушники и колонки", "🔌 Гаджеты и аксессуары", "🏠 Дом и интерьер", "🧸 Детское и игрушки", "⚽ Спорт и отдых", "📦 Другое"];
+const OPTS = {volume: ['до 20', '20–100', '100–500', '500+'], where: ['Авито', 'Telegram', 'Instagram', 'Свой сайт', 'Маркетплейсы', 'Офлайн-точка'],
+  orig: ['Оригинал', 'Реплика', 'Смешанно', 'Не про бренды'], ship: ['В день оплаты', '1–2 дня', '3–5 дней', 'Под заказ']};
+const F = {cats: [], where: [], volume: '', orig: '', ship: '', avito: false, agree: false};
+$('fee').textContent = (QS.get('fee') || '—') + '%';
+$('cats').innerHTML = CATS.map(c => `<span class="chip">${esc(c)}</span>`).join('');
+Object.entries(OPTS).forEach(([k, v]) => $(k).innerHTML = v.map(c => `<span class="chip">${esc(c)}</span>`).join(''));
+const toggle = (arr, v) => arr.includes(v) ? arr.splice(arr.indexOf(v), 1) : arr.push(v);
+document.querySelectorAll('.chips').forEach(box => box.onclick = e => {
+  const el = e.target.closest('.chip'); if (!el) return; const v = el.textContent;
+  if (box.id === 'cats' || box.id === 'where') { toggle(F[box.id], v); el.classList.toggle('sel'); }
+  else { F[box.id] = v; box.querySelectorAll('.sel').forEach(x => x.classList.remove('sel')); el.classList.add('sel'); }
+  tg && tg.HapticFeedback.selectionChanged(); check(); });
+['avito', 'agree'].forEach(k => $(k).onclick = () => { F[k] = !F[k]; $(k).classList.toggle('on', F[k]); $(k).classList.remove('need'); tg && tg.HapticFeedback.selectionChanged(); check(); });
+['shop', 'person', 'phone', 'city', 'payout'].forEach(k => $(k).oninput = () => { $(k).classList.remove('bad'); check(); });
+const need = () => ({shop: $('shop').value.trim().length > 1, person: $('person').value.trim().length > 1, phone: $('phone').value.replace(/\D/g, '').length >= 10,
+  city: $('city').value.trim().length > 1, cats: F.cats.length > 0, ship: !!F.ship, agree: F.agree});
+const ok = () => Object.values(need()).every(Boolean);
+function check() { const n = Object.values(need()); $('prog').style.width = n.filter(Boolean).length / n.length * 100 + '%';
+  if (!tg) return $('send').style.display = 'block';
+  ok() ? tg.MainButton.setParams({text: 'Отправить анкету', is_active: true, is_visible: true}) : tg.MainButton.hide(); }
+function submit() {
+  const n = need(); ['shop', 'person', 'phone', 'city'].forEach(k => n[k] || $(k).classList.add('bad')); if (!n.agree) $('agree').classList.add('need');
+  if (!ok()) return;
+  const data = JSON.stringify({kind: 'apply', shop: $('shop').value.trim(), link: $('link').value.trim(), person: $('person').value.trim(), phone: $('phone').value.trim(),
+    city: $('city').value.trim(), cats: F.cats, volume: F.volume, where: F.where, orig: F.orig, ship: F.ship, avito: F.avito, payout: $('payout').value.trim(),
+    comment: $('comment').value.trim(), agree: F.agree});
+  if (tg && tg.sendData) tg.sendData(data); else alert('Открой анкету из Telegram-бота');
+}
+$('send').onclick = submit;
+if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor('#07050c'); tg.setBackgroundColor('#07050c'); } catch (e) {} tg.MainButton.color = '#7c3aed'; tg.MainButton.onClick(submit); }
+check();
+</script></body></html>
