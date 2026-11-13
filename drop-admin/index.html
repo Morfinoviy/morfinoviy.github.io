@@ -68,7 +68,7 @@ textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:
 <h1>Новый товар</h1><p class="sub">Добавится в каталог для партнёров и выйдет постом в канал</p>
 <div class="bar"><i id="prog"></i></div>
 <div class="sec"><b>Название</b><input id="name" maxlength="120" placeholder="Кроссовки Nike Air Max 90"></div>
-<div class="sec"><b>Категория</b><div class="chips" id="cats"></div></div>
+<div class="sec"><b>Категория</b><div class="chips" id="groups"></div><div class="chips" id="cats" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)"></div></div>
 <div class="sec" id="sizeSec"><b>Размеры и количество</b>
  <div id="sizes"></div><span class="link" id="addSize">+ размер</span>
  <p class="hint" id="sizeHint"></p></div>
@@ -98,12 +98,19 @@ textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:
 const tg = window.Telegram && Telegram.WebApp, $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';');
 // shortcut: копия списка категорий из app.py — страница статичная; поменял категории в программе — обнови и тут
-const CATS = {"shoes": ["👟 Обувь", "36-46"], "tshirts": ["👕 Футболки и поло", "XS, S, M, L, XL, XXL"], "hoodies": ["🧥 Худи и свитшоты", "XS, S, M, L, XL, XXL"], "tops": ["🧶 Кофты и свитера", "XS, S, M, L, XL, XXL"], "jackets": ["🧥 Куртки и пуховики", "XS, S, M, L, XL, XXL"], "shirts": ["👔 Рубашки", "XS, S, M, L, XL, XXL"], "jeans": ["👖 Джинсы", "28, 29, 30, 31, 32, 33, 34, 36"], "pants": ["👖 Брюки и штаны", "XS, S, M, L, XL, XXL"], "shorts": ["🩳 Шорты", "XS, S, M, L, XL, XXL"], "suits": ["🏃 Спортивные костюмы", "XS, S, M, L, XL, XXL"], "dresses": ["👗 Платья и юбки", "XS, S, M, L, XL"], "underwear": ["🧦 Бельё и носки", "S, M, L, XL"], "belts": ["🎗 Ремни", ""], "bags": ["👜 Сумки и рюкзаки", ""], "wallets": ["👛 Кошельки и картхолдеры", ""], "hats": ["🧢 Головные уборы", ""], "glasses": ["🕶 Очки", ""], "watches": ["⌚ Часы", ""], "jewelry": ["💍 Украшения", ""], "scarves": ["🧣 Шарфы и перчатки", ""], "perfume": ["🌸 Парфюм", ""], "beauty": ["💄 Косметика и уход", ""], "phones": ["📱 Смартфоны", ""], "audio": ["🎧 Наушники и колонки", ""], "gadgets": ["🔌 Гаджеты и аксессуары", ""], "home": ["🏠 Дом и интерьер", ""], "kids": ["🧸 Детское и игрушки", ""], "sport": ["⚽ Спорт и отдых", ""], "other": ["📦 Другое", ""]};
+const CATS = {"tshirts": ["👕 Футболки и поло", "XS, S, M, L, XL, XXL", "👕 Одежда"], "hoodies": ["🧥 Худи и свитшоты", "XS, S, M, L, XL, XXL", "👕 Одежда"], "tops": ["🧶 Кофты и свитера", "XS, S, M, L, XL, XXL", "👕 Одежда"], "jackets": ["🧥 Куртки и пуховики", "XS, S, M, L, XL, XXL", "👕 Одежда"], "shirts": ["👔 Рубашки", "XS, S, M, L, XL, XXL", "👕 Одежда"], "jeans": ["👖 Джинсы", "28, 29, 30, 31, 32, 33, 34, 36", "👕 Одежда"], "pants": ["👖 Брюки и штаны", "XS, S, M, L, XL, XXL", "👕 Одежда"], "shorts": ["🩳 Шорты", "XS, S, M, L, XL, XXL", "👕 Одежда"], "suits": ["🏃 Спортивные костюмы", "XS, S, M, L, XL, XXL", "👕 Одежда"], "dresses": ["👗 Платья и юбки", "XS, S, M, L, XL", "👕 Одежда"], "underwear": ["🧦 Бельё и носки", "S, M, L, XL", "👕 Одежда"], "shoes": ["👟 Кроссовки и кеды", "36-46", "👟 Обувь"], "boots": ["🥾 Ботинки", "36-46", "👟 Обувь"], "dressshoes": ["👞 Туфли", "36-46", "👟 Обувь"], "sandals": ["🩴 Сандалии и шлёпанцы", "36-46", "👟 Обувь"], "belts": ["🎗 Ремни", "", "👜 Аксессуары"], "bags": ["👜 Сумки и рюкзаки", "", "👜 Аксессуары"], "wallets": ["👛 Кошельки и картхолдеры", "", "👜 Аксессуары"], "hats": ["🧢 Головные уборы", "", "👜 Аксессуары"], "glasses": ["🕶 Очки", "", "👜 Аксессуары"], "watches": ["⌚ Часы", "", "👜 Аксессуары"], "jewelry": ["💍 Украшения", "", "👜 Аксессуары"], "scarves": ["🧣 Шарфы и перчатки", "", "👜 Аксессуары"], "perfume": ["🌸 Парфюм", "", "💄 Красота"], "beauty": ["💄 Косметика и уход", "", "💄 Красота"], "phones": ["📱 Смартфоны", "", "📱 Электроника"], "audio": ["🎧 Наушники и колонки", "", "📱 Электроника"], "gadgets": ["🔌 Гаджеты и аксессуары", "", "📱 Электроника"], "home": ["🏠 Дом и интерьер", "", "🏠 Дом и хобби"], "kids": ["🧸 Детское и игрушки", "", "🏠 Дом и хобби"], "sport": ["⚽ Спорт и отдых", "", "🏠 Дом и хобби"], "other": ["📦 Другое", "", "📦 Другое"]};  // ключ: [подкатегория, сетка размеров, раздел]
 const F = {cat: 'shoes', sizes: [], channel: true};
 function grid(g) { const m = g.match(/^(\d+)-(\d+)$/);
   return m ? Array.from({length: +m[2] - +m[1] + 1}, (_, i) => String(+m[1] + i)) : g.split(/[,\s]+/).filter(Boolean); }
-function drawCats() { $('cats').innerHTML = Object.entries(CATS).map(([k, [n]]) => `<span class="chip ${k === F.cat ? 'sel' : ''}" data-k="${k}">${n}</span>`).join('');
+function drawCats() {  // как на Авито: раздел → подкатегория
+  const groups = [...new Set(Object.values(CATS).map(c => c[2]))], g = CATS[F.cat][2];
+  $('groups').innerHTML = groups.map(x => `<span class="chip ${x === g ? 'sel' : ''}" data-g="${esc(x)}">${esc(x)}</span>`).join('');
+  $('cats').innerHTML = Object.entries(CATS).filter(([, c]) => c[2] === g).map(([k, [n]]) => `<span class="chip ${k === F.cat ? 'sel' : ''}" data-k="${k}">${esc(n)}</span>`).join('');
+  $('cats').style.display = Object.values(CATS).filter(c => c[2] === g).length > 1 ? '' : 'none';
   $('sizeHint').textContent = CATS[F.cat][1] ? 'Количество 0 — размер есть в каталоге, но не в наличии.' : 'У этой категории обычно нет размеров — оставь пустым или добавь свои.'; }
+$('groups').onclick = e => { const el = e.target.closest('.chip'); if (!el) return;
+  F.cat = Object.keys(CATS).find(k => CATS[k][2] === el.dataset.g);  // первая подкатегория раздела
+  F.sizes = grid(CATS[F.cat][1]).map(s => [s, 1]); drawCats(); drawSizes(); check(); tg && tg.HapticFeedback.selectionChanged(); };
 $('cats').onclick = e => { const el = e.target.closest('.chip'); if (!el) return; F.cat = el.dataset.k;
   F.sizes = grid(CATS[F.cat][1]).map(s => [s, 1]); drawCats(); drawSizes(); tg && tg.HapticFeedback.selectionChanged(); };
 function drawSizes() { $('sizes').innerHTML = F.sizes.map(([s, q], i) => `<div class="tile ${q > 0 ? 'on' : ''}"><div class="x" data-del="${i}">×</div>

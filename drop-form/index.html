@@ -68,7 +68,7 @@ textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:
   <li>Он жмёт «Купить с доставкой» именно там — Авито создаст отправку из <span class="city"></span>.</li>
   <li>Пришли боту QR-код / код отправки из Авито.</li></ol></details></div>
 <div class="bar"><i id="prog"></i></div>
-<div class="sec"><b>Товар</b><div class="chips" id="catf" style="flex-wrap:nowrap;overflow-x:auto;margin-bottom:10px;scrollbar-width:none"></div><div class="prods" id="prods"></div></div>
+<div class="sec"><b>Товар</b><div class="chips" id="catf" style="flex-wrap:nowrap;overflow-x:auto;margin-bottom:8px;scrollbar-width:none"></div><div class="chips" id="subf" style="flex-wrap:nowrap;overflow-x:auto;margin-bottom:10px;scrollbar-width:none"></div><div class="prods" id="prods"></div></div>
 <div class="sec" id="sizeSec" style="display:none"><b>Размер</b><div class="chips" id="sizes"></div></div>
 <div class="sec"><b>Доставка</b><div class="chips" id="dels"></div>
  <div class="check" id="cityOk" style="display:none"><i></i><span>Клиент оформил покупку в объявлении с городом <b class="city"></b></span></div></div>
@@ -93,15 +93,19 @@ const F = {p: null, size: '', delivery: ''};
 
 function pick(box, el) { box.querySelectorAll('.sel').forEach(x => x.classList.remove('sel')); el.classList.add('sel'); tg && tg.HapticFeedback.selectionChanged(); }
 // фильтр по категориям: «Все» + те, в которых есть товары
-let CF = '';
+let CF = '', CG = '';  // подкатегория и раздел
 function drawProds() {
-  const cats = [...new Set(cat.map(c => c[4] || ''))].filter(Boolean);
-  $('catf').style.display = cats.length > 1 ? '' : 'none';
-  $('catf').innerHTML = ['', ...cats].map(c => `<span class="chip ${c === CF ? 'sel' : ''}" data-c="${esc(c)}" style="white-space:nowrap">${c ? esc(c) : 'Все'}</span>`).join('');
-  $('prods').innerHTML = cat.map(([i, n, s, city, c, who], k) => CF && c !== CF ? '' : `<div class="prod ${F.p === i ? 'sel' : ''}" data-k="${k}">${esc(n)}<small>${c ? esc(c) + ' · ' : ''}${who ? '🏪 ' + esc(who) + ' · ' : ''}${s.length ? 'Размеры: ' + s.map(esc).join(', ') : 'Без размера'}</small></div>`).join('')
+  const chip = (v, on, label, attr) => `<span class="chip ${on ? 'sel' : ''}" ${attr}="${esc(v)}" style="white-space:nowrap">${esc(label)}</span>`;
+  const groups = [...new Set(cat.map(c => c[6] || ''))].filter(Boolean), subs = [...new Set(cat.filter(c => c[6] === CG).map(c => c[4]))];
+  $('catf').style.display = groups.length > 1 ? '' : 'none';
+  $('catf').innerHTML = ['', ...groups].map(g => chip(g, g === CG, g || 'Все', 'data-g')).join('');
+  $('subf').style.display = CG && subs.length > 1 ? '' : 'none';
+  $('subf').innerHTML = ['', ...subs].map(c => chip(c, c === CF, c || 'Все в разделе', 'data-c')).join('');
+  $('prods').innerHTML = cat.map(([i, n, s, city, c, who, g], k) => (CG && g !== CG) || (CF && c !== CF) ? '' : `<div class="prod ${F.p === i ? 'sel' : ''}" data-k="${k}">${esc(n)}<small>${c ? esc(c) + ' · ' : ''}${who ? '🏪 ' + esc(who) + ' · ' : ''}${s.length ? 'Размеры: ' + s.map(esc).join(', ') : 'Без размера'}</small></div>`).join('')
   || '<div class="empty">Сейчас нет товаров в наличии</div>';
 }
-$('catf').onclick = e => { const el = e.target.closest('.chip'); if (!el) return; CF = el.dataset.c; drawProds(); tg && tg.HapticFeedback.selectionChanged(); };
+$('catf').onclick = e => { const el = e.target.closest('.chip'); if (!el) return; CG = el.dataset.g; CF = ''; drawProds(); tg && tg.HapticFeedback.selectionChanged(); };
+$('subf').onclick = e => { const el = e.target.closest('.chip'); if (!el) return; CF = el.dataset.c; drawProds(); tg && tg.HapticFeedback.selectionChanged(); };
 drawProds();
 $('prods').onclick = e => { const el = e.target.closest('.prod'); if (!el) return; pick($('prods'), el);
   const [i, n, s, city] = cat[+el.dataset.k]; F.p = i; F.name = n; F.size = '';

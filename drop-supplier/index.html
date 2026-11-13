@@ -73,7 +73,7 @@ textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:
 <div class="sec"><b>Контакты</b><input id="person" maxlength="80" placeholder="Как к тебе обращаться">
  <input id="phone" inputmode="tel" maxlength="30" placeholder="Телефон"></div>
 <div class="sec"><b>Откуда отправляешь</b><input id="city" maxlength="40" placeholder="Город, например Москва"></div>
-<div class="sec"><b>Что продаёшь</b><div class="chips" id="cats"></div><p class="hint">Можно выбрать несколько</p></div>
+<div class="sec"><b>Что продаёшь</b><div class="chips" id="cats"></div><p class="hint">Разделы — можно несколько</p></div>
 <div class="sec"><b>Сколько товаров</b><div class="chips" data-one="volume" id="volume"></div></div>
 <div class="sec"><b>Где продаёшь сейчас</b><div class="chips" data-many="where" id="where"></div></div>
 <div class="sec"><b>Товар</b><div class="chips" data-one="orig" id="orig"></div></div>
@@ -88,7 +88,7 @@ textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:
 const tg = window.Telegram && Telegram.WebApp, $ = id => document.getElementById(id), QS = new URLSearchParams(location.search);
 const esc = s => String(s).replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';');
 // shortcut: копия списка категорий из app.py — страница статичная
-const CATS = ["👟 Обувь", "👕 Футболки и поло", "🧥 Худи и свитшоты", "🧶 Кофты и свитера", "🧥 Куртки и пуховики", "👔 Рубашки", "👖 Джинсы", "👖 Брюки и штаны", "🩳 Шорты", "🏃 Спортивные костюмы", "👗 Платья и юбки", "🧦 Бельё и носки", "🎗 Ремни", "👜 Сумки и рюкзаки", "👛 Кошельки и картхолдеры", "🧢 Головные уборы", "🕶 Очки", "⌚ Часы", "💍 Украшения", "🧣 Шарфы и перчатки", "🌸 Парфюм", "💄 Косметика и уход", "📱 Смартфоны", "🎧 Наушники и колонки", "🔌 Гаджеты и аксессуары", "🏠 Дом и интерьер", "🧸 Детское и игрушки", "⚽ Спорт и отдых", "📦 Другое"];
+const CATS = ["👕 Одежда", "👟 Обувь", "👜 Аксессуары", "💄 Красота", "📱 Электроника", "🏠 Дом и хобби", "📦 Другое"];  // разделы каталога
 const OPTS = {volume: ['до 20', '20–100', '100–500', '500+'], where: ['Авито', 'Telegram', 'Instagram', 'Свой сайт', 'Маркетплейсы', 'Офлайн-точка'],
   orig: ['Оригинал', 'Реплика', 'Смешанно', 'Не про бренды'], ship: ['В день оплаты', '1–2 дня', '3–5 дней', 'Под заказ']};
 const F = {cats: [], where: [], volume: '', orig: '', ship: '', avito: false, agree: false};
