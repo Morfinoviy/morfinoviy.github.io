@@ -85,6 +85,7 @@ textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:
 <section class="scr" id="orders"><h1>Мои заказы</h1><div id="oList"></div></section>
 <section class="scr" id="sales"><h1>Мои продажи</h1><div id="sList"></div></section>
 <section class="scr" id="invite"><h1>Пригласить</h1><div id="inv"></div></section>
+<section class="scr" id="media"><h1>Фото и видео</h1><p class="sub">Нажми товар — бот пришлёт фото, видео и готовый текст для объявления на Авито</p><div id="mList"></div></section>
 <section class="scr" id="howto"><h1>Как работать</h1><div class="sec txt" id="memo"></div></section>
 <script>
 const tg = window.Telegram && Telegram.WebApp, $ = id => document.getElementById(id), QS = new URLSearchParams(location.search);
@@ -110,7 +111,7 @@ $('lv').innerHTML = `<div class="row"><b>${esc(lv[0] || '')} ${esc(lv[1] || '')}
   <div class="bar"><i style="width:${Math.min(100, lv[2] || 0)}%"></i></div>
   <small class="sub">${lv[3] ? `До ${esc(lv[3])}: ещё ${rub(lv[4])} оборота` : 'Максимальный уровень'}</small>`;
 const T = [['order', '🛒', 'Новый заказ', 'Анкета и QR-код', 'main'], ['orders', '📋', 'Мои заказы', (D.o || []).length ? (D.o || []).length + ' последних' : 'пока нет'],
-  ['invite', '🤝', 'Пригласить', (D.rr || 0) + '% с оборота друзей'], ['howto', 'ℹ️', 'Как работать', 'Шаг за шагом'], ['support', '💬', 'Поддержка', esc(D.sup || '')]];
+  ['media', '📸', 'Фото для Авито', 'Фото, видео и текст'], ['invite', '🤝', 'Пригласить', (D.rr || 0) + '% с оборота друзей'], ['howto', 'ℹ️', 'Как работать', 'Шаг за шагом'], ['support', '💬', 'Поддержка', esc(D.sup || '')]];
 if (D.s) T.push(['product', '➕', 'Новый товар', 'Фото, размеры, цена'], ['sales', '🏪', 'Мои продажи', D.s.until ? 'подписка до ' + esc(D.s.until) : 'подписка не оплачена']);
 $('tiles').innerHTML = T.map(([w, i, b, s, c], k) => `<div class="tile ${c || ''}" style="animation-delay:${k * .04}s" onclick="nav('${w}')"><i>${i}</i><div><b>${b}</b><br><small>${s}</small></div></div>`).join('');
 $('oList').innerHTML = (D.o || []).map(([id, p, sz, s, who]) => `<div class="item"><b>№${id} ${esc(p)} ${esc(sz)}</b><small>${esc(s)}${who ? ' · вопросы: ' + esc(who) : ''}</small></div>`).join('')
@@ -124,6 +125,11 @@ $('memo').textContent = (D.memo || '') + (D.s ? '\n\n' + D.s.memo : '');
 if (D.s) $('sList').innerHTML = `<div class="stats"><div><b>${D.s.sold || 0}</b><small>продано</small></div><div><b>${rub(D.s.gross)}</b><small>по дроп-цене</small></div>
   <div style="grid-column:1/-1"><b>${D.s.until ? 'до ' + esc(D.s.until) : 'не оплачена'}</b><small>подписка ${esc(D.s.sub)} ₽ в месяц${D.s.until ? '' : ' — товары скрыты, переведи владельцу ' + esc(D.sup || '')}</small></div></div>` +
   ((D.s.list || []).map(([id, p, sz, s]) => `<div class="item"><b>№${id} ${esc(p)} ${esc(sz)}</b><small>${esc(s)}</small></div>`).join('') || '<p class="empty">Пока продаж нет</p>');
+let CAT = []; try { CAT = unb64(QS.get('c') || ''); } catch (e) {}
+$('mList').innerHTML = CAT.filter(c => c[9]).map(c => `<div class="item" style="cursor:pointer" onclick="getMedia(${c[0]})"><b>${esc(c[1])}</b>
+  <small>${esc(c[4] || '')} · 📸 ${c[9]} · ${c[2].length ? 'размеры ' + c[2].map(esc).join(', ') : 'без размера'}</small></div>`).join('')
+  || '<p class="empty">У товаров пока нет фото и видео</p>';
+function getMedia(i) { tg && tg.sendData ? tg.sendData(JSON.stringify({kind: 'media', p: i})) : alert('Открой из Telegram-бота'); }
 function share() { const u = 'https://t.me/share/url?url=' + encodeURIComponent(D.ref || '') + '&text=' + encodeURIComponent('Дроп-канал: продавай товары без вложений'); tg ? tg.openTelegramLink(u) : window.open(u); }
 function copy() { navigator.clipboard.writeText(D.ref || '').then(() => tg ? tg.showAlert('Ссылка скопирована') : alert('Скопировано'), () => {}); }
 if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor('#07050c'); tg.setBackgroundColor('#07050c'); } catch (e) {} tg.BackButton.onClick(back); }

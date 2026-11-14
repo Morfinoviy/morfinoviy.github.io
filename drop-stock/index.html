@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="robots" content="noindex">
+<title>Мои товары</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--acc:#a855f7;--acc2:#7c3aed;--bg:#07050c;--fg:#f5f3ff;--mut:#a49cb8;--card:rgba(255,255,255,.05);--line:rgba(255,255,255,.1);--err:#f87171;--ok:#22c55e;--ease:cubic-bezier(.22,1,.36,1)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{font:15px/1.45 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif;color:var(--fg);padding:22px 14px 70px;min-height:100vh;counter-reset:s;
+ background:radial-gradient(120% 55% at 85% -10%,rgba(168,85,247,.38),transparent 60%),radial-gradient(90% 45% at -15% 45%,rgba(124,58,237,.2),transparent 60%),var(--bg);background-attachment:fixed}
+h1{font-size:30px;font-weight:900;letter-spacing:-.03em;background:linear-gradient(90deg,#fff 30%,#d8b4fe);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--mut);margin-top:4px}
+.bar{height:6px;border-radius:6px;background:rgba(255,255,255,.08);margin-top:16px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,var(--acc2),#c084fc);box-shadow:0 0 14px var(--acc);transition:width .6s var(--ease)}
+.sec{margin-top:14px;padding:16px;border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.025));border:1px solid var(--line);
+ backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 12px 34px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06);animation:up .6s var(--ease) both}
+.sec:nth-of-type(2){animation-delay:.05s}.sec:nth-of-type(3){animation-delay:.1s}.sec:nth-of-type(4){animation-delay:.15s}.sec:nth-of-type(5){animation-delay:.2s}.sec:nth-of-type(n+6){animation-delay:.25s}
+@keyframes up{from{opacity:0;transform:translateY(14px)}}
+.sec>b{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;font-weight:700}
+.sec>b:before{counter-increment:s;content:counter(s);flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;color:#fff;
+ background:linear-gradient(135deg,#c084fc,var(--acc2));box-shadow:0 0 12px rgba(168,85,247,.7)}
+.prods{display:flex;flex-direction:column;gap:8px}
+.prod{padding:14px 16px;border-radius:16px;background:var(--card);border:1px solid var(--line);font-weight:700;cursor:pointer;transition:.3s var(--ease)}
+.prod small{display:block;font-weight:400;color:var(--mut);margin-top:3px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:10px 16px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-weight:600;cursor:pointer;transition:.3s var(--ease);user-select:none}
+.prod:active,.chip:active{transform:scale(.96)}
+.chip.sz{text-align:center;min-width:58px} .chip.sz small{display:block;font-size:11px;font-weight:500;color:var(--mut);margin-top:1px} .chip.sz.sel small{color:#e9d5ff}
+.sel{background:linear-gradient(90deg,rgba(124,58,237,.6),rgba(168,85,247,.35))!important;border-color:rgba(192,132,252,.9)!important;color:#fff!important;
+ box-shadow:0 0 0 1px rgba(192,132,252,.35),0 0 26px rgba(168,85,247,.55),inset 0 0 14px rgba(255,255,255,.1)!important}
+.sel small{color:#e9d5ff}
+input,textarea{width:100%;font:inherit;color:var(--fg);background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:14px;padding:13px 14px;outline:none;transition:.3s var(--ease)}
+input::placeholder,textarea::placeholder{color:#6f6782}
+input:focus,textarea:focus{border-color:rgba(192,132,252,.8);box-shadow:0 0 0 4px rgba(168,85,247,.18),0 0 20px rgba(168,85,247,.25)}
+textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:8px}
+.hint{color:var(--mut);font-size:13px;margin-top:10px} .bad{border-color:var(--err)!important;box-shadow:0 0 16px rgba(248,113,113,.35)!important}
+.empty{color:var(--mut);padding:26px 0;text-align:center}
+#send{display:none;margin-top:22px;width:100%;height:54px;border:0;border-radius:18px;color:#fff;font:800 16px inherit;
+ background:linear-gradient(90deg,var(--acc2),#c084fc);box-shadow:0 0 30px rgba(168,85,247,.55)}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px} .grid3 small{display:block;color:var(--mut);font-size:12px;margin:0 0 4px 4px}
+.srow{display:flex;gap:8px;align-items:center;margin-top:8px} .srow input{flex:1}
+.step{display:flex;align-items:center;background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.step span{width:40px;text-align:center;font-size:20px;color:#c084fc;cursor:pointer;user-select:none;padding:10px 0}
+.step input{width:50px;text-align:center;background:none;border:0;box-shadow:none!important;padding:12px 0}
+.x{width:36px;height:36px;display:grid;place-items:center;color:var(--mut);font-size:20px;cursor:pointer}
+.link{color:#c084fc;font-weight:700;margin-top:12px;display:inline-block;cursor:pointer;text-shadow:0 0 12px rgba(168,85,247,.6)}
+.toggle{display:flex;align-items:center;justify-content:space-between;font-weight:600;cursor:pointer}
+.sw{width:52px;height:30px;border-radius:999px;background:rgba(255,255,255,.12);position:relative;transition:.35s var(--ease);flex:none}
+.sw:after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.35s var(--ease);box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.sw.on{background:linear-gradient(90deg,var(--acc2),#c084fc);box-shadow:0 0 22px rgba(168,85,247,.65)} .sw.on:after{transform:translateX(22px)}
+.note{margin-top:14px;padding:14px 16px;border-radius:18px;background:linear-gradient(135deg,rgba(124,58,237,.35),rgba(168,85,247,.12));
+ border:1px solid rgba(192,132,252,.45);box-shadow:0 0 26px rgba(168,85,247,.25);font-size:14px;animation:up .6s var(--ease) both}
+.note b{display:block;font-size:15px;margin-bottom:4px} .note details{margin-top:8px;color:#e9d5ff} .note summary{cursor:pointer;color:#d8b4fe;font-weight:700}
+.note ol{margin:8px 0 0 18px} .note li{margin-top:4px}
+.check{display:flex;gap:12px;align-items:flex-start;margin-top:12px;padding:12px 14px;border-radius:14px;background:rgba(0,0,0,.28);border:1px solid var(--line);cursor:pointer;transition:.3s var(--ease)}
+.check i{flex:none;width:24px;height:24px;border-radius:8px;border:2px solid rgba(192,132,252,.6);display:grid;place-items:center;font-style:normal;transition:.3s var(--ease)}
+.check.on{border-color:rgba(192,132,252,.8);box-shadow:0 0 22px rgba(168,85,247,.35)} .check.on i{background:linear-gradient(135deg,#c084fc,var(--acc2));border-color:transparent}
+.check.on i:after{content:"✓";color:#fff;font-weight:900} .check.need{border-color:var(--err);box-shadow:0 0 16px rgba(248,113,113,.35)}
+.total{display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding:12px 14px;border-radius:14px;background:rgba(168,85,247,.12);border:1px solid rgba(192,132,252,.35)}
+.total b{font-size:22px;font-weight:900;letter-spacing:-.02em} .margin-ok{color:var(--ok)} .margin-bad{color:var(--err)}
+
+.scr{display:none} .scr.on{display:block;animation:up .45s var(--ease) both}
+.item{padding:14px 16px;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid var(--line);margin-top:10px;cursor:pointer;transition:.3s var(--ease)}
+.item:active{transform:scale(.98)} .item .row{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.item b{font-size:16px} .item .left{font-weight:800;white-space:nowrap} .item .left.zero{color:var(--err)}
+.item small{display:block;color:var(--mut);margin-top:4px} .szs{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.szs span{font-size:12px;padding:3px 8px;border-radius:8px;background:rgba(0,0,0,.3);border:1px solid var(--line)} .szs span.zero{opacity:.45;text-decoration:line-through}
+.tag{display:inline-block;font-size:11px;padding:2px 7px;border-radius:7px;background:rgba(168,85,247,.18);color:#e9d5ff;margin-left:6px;vertical-align:middle}
+#grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tl{position:relative;padding:10px 6px 8px;border-radius:16px;background:rgba(0,0,0,.25);border:1px solid var(--line);text-align:center}
+.tl.on{border-color:rgba(192,132,252,.45);box-shadow:0 0 18px rgba(168,85,247,.18)}
+.tl .sz{background:none;border:0;text-align:center;font-weight:800;font-size:18px;padding:2px 0 4px;box-shadow:none!important}
+.tl .cm{display:flex;align-items:baseline;justify-content:center;gap:3px;margin:0 0 6px} .tl .cm input{width:42px;padding:2px 0;text-align:center;background:none;border:0;
+ border-bottom:1px dashed var(--line);border-radius:0;box-shadow:none!important;font-size:14px;color:#d8b4fe} .tl .cm small{font-size:10px;color:var(--mut)}
+.tl .step{justify-content:space-between} .tl .step span{width:30px;padding:6px 0} .tl .step input{width:30px;padding:6px 0;font-size:14px}
+.tl .x{position:absolute;top:0;right:0;width:26px;height:26px;font-size:15px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px} .two small{display:block;color:var(--mut);font-size:12px;margin:0 0 4px 4px}
+.btn{display:block;width:100%;margin-top:10px;height:48px;border-radius:16px;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;color:var(--fg);
+ background:var(--card);border:1px solid var(--line)} .btn.red{color:var(--err);border-color:rgba(248,113,113,.35)}
+#save{display:none;margin-top:16px;width:100%;height:54px;border:0;border-radius:18px;color:#fff;font-family:inherit;font-weight:800;font-size:16px;
+ background:linear-gradient(90deg,var(--acc2),#c084fc);box-shadow:0 0 30px rgba(168,85,247,.55)}
+</style></head><body>
+<section class="scr on" id="list">
+ <h1>Мои товары</h1><p class="sub" id="total"></p>
+ <input id="q" placeholder="Поиск по названию" style="margin-top:14px">
+ <div class="chips" id="flt" style="margin-top:10px"></div>
+ <div id="items"></div>
+</section>
+<section class="scr" id="edit">
+ <h1 id="eName" style="font-size:24px"></h1><p class="sub" id="eSub"></p>
+ <div class="sec"><b>Цена</b><div class="two"><div><small>Дроп-цена, ₽</small><input id="price" inputmode="decimal"></div>
+  <div><small>Рекомендуемая, ₽</small><input id="retail" inputmode="decimal"></div></div></div>
+ <div class="sec"><b>Размеры и наличие</b><div id="grid"></div><span class="link" id="add">+ размер</span>
+  <p class="hint">Количество 0 — размера нет в наличии, партнёры его не увидят.</p></div>
+ <div class="sec" id="hideSec"><div class="toggle" id="hide"><span>Скрыть из каталога</span><div class="sw"></div></div></div>
+ <div class="sec"><b>Фото и видео</b><p id="media"></p>
+  <button class="btn" id="mediaBtn">📸 Заменить фото и видео</button><button class="btn red" id="del">Удалить товар</button></div>
+ <button id="save">Сохранить</button>
+</section>
+<script>
+const tg = window.Telegram && Telegram.WebApp, $ = id => document.getElementById(id), QS = new URLSearchParams(location.search);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const rub = n => Math.round(+n || 0).toLocaleString('ru') + ' ₽';
+let ALL = []; try { ALL = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob((QS.get('d') || '').replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)))); } catch (e) {}
+// [pid, название, дроп, рек, скрыт, продавец, размеры, фото, видео, версия, подкатегория]
+const left = p => p[6].reduce((a, r) => a + (+r[1] || 0), 0);
+const shoe = p => p[6].some(r => r[2]) || /кросс|кед|ботин|туфл|санд|шл[её]п|обув|сапог|лофер|мокас/i.test(p[10] || '');
+let FL = 'all', P = null, E = null;
+const FLT = [['all', 'Все'], ['in', 'В наличии'], ['out', 'Нет в наличии'], ['hid', 'Скрытые']];
+function drawList() {
+  const q = $('q').value.trim().toLowerCase();
+  $('flt').innerHTML = FLT.map(([k, n]) => `<span class="chip ${k === FL ? 'sel' : ''}" data-f="${k}">${n}</span>`).join('');
+  const show = ALL.filter(p => (!q || p[1].toLowerCase().includes(q)) && (FL === 'all' || (FL === 'in' && left(p) > 0 && !p[4]) || (FL === 'out' && !left(p) && p[6].length) || (FL === 'hid' && p[4])));
+  $('total').textContent = `${ALL.length} товаров · в наличии ${ALL.reduce((a, p) => a + left(p), 0)} шт`;
+  $('items').innerHTML = show.map(p => `<div class="item" data-pid="${p[0]}"><div class="row"><b>${esc(p[1])}${p[4] ? '<span class="tag">скрыт</span>' : ''}</b>
+     <span class="left ${p[6].length && !left(p) ? 'zero' : ''}">${p[6].length ? left(p) + ' шт' : ''}</span></div>
+     <small>${esc(p[10] || '')}${p[5] ? ' · 🏪 ' + esc(p[5]) : ''} · дроп ${rub(p[2])} · 📸 ${p[7]}${p[8] ? ' · 🎬' : ''}</small>
+     ${p[6].length ? `<div class="szs">${p[6].map(r => `<span class="${+r[1] ? '' : 'zero'}">${esc(r[0])}${r[2] ? ' · ' + r[2] + ' см' : ''} · ${r[1]}</span>`).join('')}</div>` : ''}</div>`).join('')
+    || '<p class="empty">Ничего не нашлось</p>';
+}
+$('q').oninput = drawList;
+$('flt').onclick = e => { const el = e.target.closest('.chip'); if (el) { FL = el.dataset.f; drawList(); } };
+$('items').onclick = e => { const el = e.target.closest('.item'); if (el) openP(ALL.find(p => String(p[0]) === el.dataset.pid)); };
+function go(id) { document.querySelectorAll('.scr').forEach(s => s.classList.toggle('on', s.id === id)); scrollTo(0, 0);
+  if (tg) { id === 'list' ? (tg.BackButton.hide(), tg.MainButton.hide()) : (tg.BackButton.show(), tg.MainButton.setParams({text: 'Сохранить', is_visible: true, is_active: true})); }
+  else $('save').style.display = id === 'list' ? 'none' : 'block'; }
+function openP(p) { P = p; E = {sizes: p[6].map(r => [r[0], +r[1] || 0, r[2] || '']), hidden: !!p[4]};
+  $('eName').textContent = p[1]; $('eSub').textContent = (p[10] || '') + (p[5] ? ' · поставщик ' + p[5] : ' · твой товар');
+  $('price').value = p[2] || ''; $('retail').value = p[3] || '';
+  $('hideSec').style.display = p[5] ? 'none' : ''; $('hide').querySelector('.sw').classList.toggle('on', E.hidden);
+  $('media').textContent = `Сейчас: ${p[7]} фото${p[8] ? ' и видео' : ', видео нет'}. На Авито — до 9 фото и одно видео.`;
+  drawGrid(); go('edit'); }
+function drawGrid() { const ft = shoe(P);
+  $('grid').innerHTML = E.sizes.map(([s, q, cm], i) => `<div class="tl ${q > 0 ? 'on' : ''}"><div class="x" data-del="${i}">×</div>
+    <input value="${esc(s)}" data-i="${i}" class="sz" placeholder="Размер" maxlength="12">
+    ${ft ? `<label class="cm"><input value="${esc(cm)}" data-i="${i}" class="ft" inputmode="decimal" placeholder="—" maxlength="5"><small>см стопа</small></label>` : ''}
+    <div class="step"><span data-d="-1" data-i="${i}">−</span><input value="${q}" data-i="${i}" class="qt" inputmode="numeric"><span data-d="1" data-i="${i}">+</span></div></div>`).join(''); }
+$('grid').oninput = e => { const i = +e.target.dataset.i, c = e.target.classList;
+  if (c.contains('sz')) E.sizes[i][0] = e.target.value; if (c.contains('ft')) E.sizes[i][2] = e.target.value.replace(',', '.');
+  if (c.contains('qt')) E.sizes[i][1] = Math.max(0, parseInt(e.target.value) || 0); };
+$('grid').onclick = e => { const t = e.target;
+  if (t.dataset.d) { const i = +t.dataset.i; E.sizes[i][1] = Math.max(0, E.sizes[i][1] + +t.dataset.d); drawGrid(); tg && tg.HapticFeedback.selectionChanged(); }
+  if (t.dataset.del) { E.sizes.splice(+t.dataset.del, 1); drawGrid(); } };
+$('add').onclick = () => { E.sizes.push(['', 1, '']); drawGrid(); };
+$('hide').onclick = () => { E.hidden = !E.hidden; $('hide').querySelector('.sw').classList.toggle('on', E.hidden); };
+const send = d => tg && tg.sendData ? tg.sendData(JSON.stringify({kind: 'stock', pid: P[0], ...d})) : alert('Открой из Telegram-бота');
+function save() { send({ver: P[9], price: $('price').value.trim(), retail: $('retail').value.trim(), hidden: E.hidden,
+  sizes: E.sizes.filter(r => String(r[0]).trim()).map(([s, q, cm]) => cm ? [s, q, cm] : [s, q])}); }
+$('save').onclick = save;
+$('mediaBtn').onclick = () => send({media: true});
+$('del').onclick = () => tg ? tg.showConfirm(`Удалить «${P[1]}» из каталога?`, ok => ok && send({delete: true})) : confirm('Удалить?') && send({delete: true});
+if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor('#07050c'); tg.setBackgroundColor('#07050c'); } catch (e) {}
+  tg.BackButton.onClick(() => go('list')); tg.MainButton.color = '#7c3aed'; tg.MainButton.onClick(save); }
+drawList();
+</script></body></html>
