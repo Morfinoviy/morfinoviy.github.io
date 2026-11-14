@@ -85,7 +85,7 @@ textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:
 <section class="scr" id="orders"><h1>Мои заказы</h1><div id="oList"></div></section>
 <section class="scr" id="sales"><h1>Мои продажи</h1><div id="sList"></div></section>
 <section class="scr" id="invite"><h1>Пригласить</h1><div id="inv"></div></section>
-<section class="scr" id="media"><h1>Фото и видео</h1><p class="sub">Нажми товар — бот пришлёт фото и видео для Авито и подскажет, что написать в объявлении. Текст пиши сам: у каждого он должен быть свой</p><div id="mList"></div></section>
+<section class="scr" id="media"><h1>Фото и видео</h1><p class="sub">Нажми товар — бот пришлёт фото и видео для Авито. Описание объявления пиши сам, как хочешь: у каждого оно должно быть своё</p><div id="mList"></div></section>
 <section class="scr" id="howto"><h1>Как работать</h1><div class="sec txt" id="memo"></div></section>
 <script>
 const tg = window.Telegram && Telegram.WebApp, $ = id => document.getElementById(id), QS = new URLSearchParams(location.search);
@@ -111,7 +111,7 @@ $('lv').innerHTML = `<div class="row"><b>${esc(lv[0] || '')} ${esc(lv[1] || '')}
   <div class="bar"><i style="width:${Math.min(100, lv[2] || 0)}%"></i></div>
   <small class="sub">${lv[3] ? `До ${esc(lv[3])}: ещё ${rub(lv[4])} оборота` : 'Максимальный уровень'}</small>`;
 const T = [['order', '🛒', 'Новый заказ', 'Анкета и QR-код', 'main'], ['orders', '📋', 'Мои заказы', (D.o || []).length ? (D.o || []).length + ' последних' : 'пока нет'],
-  ['media', '📸', 'Фото для Авито', 'Фото, видео, подсказки'], ['invite', '🤝', 'Пригласить', (D.rr || 0) + '% с оборота друзей'], ['howto', 'ℹ️', 'Как работать', 'Шаг за шагом'], ['support', '💬', 'Поддержка', esc(D.sup || '')]];
+  ['media', '📸', 'Фото для Авито', 'Фото и видео'], ['invite', '🤝', 'Пригласить', (D.rr || 0) + '% с оборота друзей'], ['howto', 'ℹ️', 'Как работать', 'Шаг за шагом'], ['support', '💬', 'Поддержка', esc(D.sup || '')]];
 if (D.s) T.push(['product', '➕', 'Новый товар', 'Фото, размеры, цена'], ['sales', '🏪', 'Мои продажи', D.s.until ? 'подписка до ' + esc(D.s.until) : 'подписка не оплачена']);
 $('tiles').innerHTML = T.map(([w, i, b, s, c], k) => `<div class="tile ${c || ''}" style="animation-delay:${k * .04}s" onclick="nav('${w}')"><i>${i}</i><div><b>${b}</b><br><small>${s}</small></div></div>`).join('');
 $('oList').innerHTML = (D.o || []).map(([id, p, sz, s, who]) => `<div class="item"><b>№${id} ${esc(p)} ${esc(sz)}</b><small>${esc(s)}${who ? ' · вопросы: ' + esc(who) : ''}</small></div>`).join('')
