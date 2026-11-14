@@ -113,8 +113,8 @@ $('prods').onclick = e => { const el = e.target.closest('.prod'); if (!el) retur
   const [i, n, s, city] = cat[+el.dataset.k]; F.p = i; F.name = n; F.size = '';
   CITY = city || URL_CITY; document.querySelectorAll('.city').forEach(e => e.textContent = CITY); $('cityNote').style.display = CITY ? '' : 'none';
   $('sizeSec').style.display = s.length ? '' : 'none';
-  const left = cat[+el.dataset.k][7] || [];  // сколько осталось каждого размера
-  $('sizes').innerHTML = s.map((x, k) => `<span class="chip sz" data-s="${esc(x)}">${esc(x)}<small>${left[k] != null ? left[k] + ' шт' : ''}</small></span>`).join(''); F.sizes = s;
+  const left = cat[+el.dataset.k][7] || [], foot = cat[+el.dataset.k][8] || [];  // остаток и длина стопы каждого размера
+  $('sizes').innerHTML = s.map((x, k) => `<span class="chip sz" data-s="${esc(x)}">${esc(x)}${foot[k] ? `<small>${esc(foot[k])} см</small>` : ''}<small>${left[k] != null ? left[k] + ' шт' : ''}</small></span>`).join(''); F.sizes = s;
   check(); };
 $('sizes').onclick = e => { const el = e.target.closest('.chip'); if (!el) return; pick($('sizes'), el); F.size = el.dataset.s; check(); };
 $('dels').innerHTML = DELIVERY.map(x => `<span class="chip">${x}</span>`).join('');

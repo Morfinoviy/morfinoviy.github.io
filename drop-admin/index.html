@@ -55,6 +55,8 @@ textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:
 .tile .sz{background:none;border:0;text-align:center;font-weight:800;font-size:18px;padding:2px 0 6px;box-shadow:none!important}
 .tile .step{justify-content:space-between} .tile .step span{width:30px;padding:6px 0} .tile .step input{width:30px;padding:6px 0;font-size:14px}
 .tile .x{position:absolute;top:0;right:0;width:26px;height:26px;font-size:15px}
+.tile .cm{display:flex;align-items:baseline;justify-content:center;gap:3px;margin:-2px 0 6px} .tile .cm input{width:42px;padding:2px 0;text-align:center;
+ background:none;border:0;border-bottom:1px dashed var(--line);border-radius:0;box-shadow:none!important;font-size:14px;color:#d8b4fe} .tile .cm small{font-size:10px;color:var(--mut)}
 .note{margin-top:14px;padding:14px 16px;border-radius:18px;background:linear-gradient(135deg,rgba(124,58,237,.35),rgba(168,85,247,.12));
  border:1px solid rgba(192,132,252,.45);box-shadow:0 0 26px rgba(168,85,247,.25);font-size:14px;animation:up .6s var(--ease) both}
 .note b{display:block;font-size:15px;margin-bottom:4px} .note details{margin-top:8px;color:#e9d5ff} .note summary{cursor:pointer;color:#d8b4fe;font-weight:700}
@@ -103,26 +105,32 @@ const CATS = {"tshirts": ["👕 Футболки и поло", "XS, S, M, L, XL,
 const F = {cat: 'shoes', sizes: [], channel: true};
 function grid(g) { const m = g.match(/^(\d+)-(\d+)$/);
   return m ? Array.from({length: +m[2] - +m[1] + 1}, (_, i) => String(+m[1] + i)) : g.split(/[,\s]+/).filter(Boolean); }
+const isShoe = () => (CATS[F.cat][2] || '').includes('Обувь');
+const footCm = eu => { const n = parseFloat(String(eu).replace(',', '.')); return n >= 30 && n <= 50 ? String(Math.round((n / 1.5 - 1.5) * 2) / 2) : ''; };  // EU → стопа, см (можно поправить)
+const fresh = () => grid(CATS[F.cat][1]).map(s => isShoe() ? [s, 1, footCm(s)] : [s, 1]);
 function drawCats() {  // как на Авито: раздел → подкатегория
   const groups = [...new Set(Object.values(CATS).map(c => c[2]))], g = CATS[F.cat][2];
   $('groups').innerHTML = groups.map(x => `<span class="chip ${x === g ? 'sel' : ''}" data-g="${esc(x)}">${esc(x)}</span>`).join('');
   $('cats').innerHTML = Object.entries(CATS).filter(([, c]) => c[2] === g).map(([k, [n]]) => `<span class="chip ${k === F.cat ? 'sel' : ''}" data-k="${k}">${esc(n)}</span>`).join('');
   $('cats').style.display = Object.values(CATS).filter(c => c[2] === g).length > 1 ? '' : 'none';
-  $('sizeHint').textContent = CATS[F.cat][1] ? 'Количество 0 — размер есть в каталоге, но не в наличии.' : 'У этой категории обычно нет размеров — оставь пустым или добавь свои.'; }
+  $('sizeHint').textContent = isShoe() ? 'Длина стопы подставлена по общей таблице — поправь под свою модель, её видят партнёры. Количество 0 — нет в наличии.'
+    : CATS[F.cat][1] ? 'Количество 0 — размер есть в каталоге, но не в наличии.' : 'У этой категории обычно нет размеров — оставь пустым или добавь свои.'; }
 $('groups').onclick = e => { const el = e.target.closest('.chip'); if (!el) return;
   F.cat = Object.keys(CATS).find(k => CATS[k][2] === el.dataset.g);  // первая подкатегория раздела
-  F.sizes = grid(CATS[F.cat][1]).map(s => [s, 1]); drawCats(); drawSizes(); check(); tg && tg.HapticFeedback.selectionChanged(); };
+  F.sizes = fresh(); drawCats(); drawSizes(); check(); tg && tg.HapticFeedback.selectionChanged(); };
 $('cats').onclick = e => { const el = e.target.closest('.chip'); if (!el) return; F.cat = el.dataset.k;
-  F.sizes = grid(CATS[F.cat][1]).map(s => [s, 1]); drawCats(); drawSizes(); tg && tg.HapticFeedback.selectionChanged(); };
-function drawSizes() { $('sizes').innerHTML = F.sizes.map(([s, q], i) => `<div class="tile ${q > 0 ? 'on' : ''}"><div class="x" data-del="${i}">×</div>
+  F.sizes = fresh(); drawCats(); drawSizes(); tg && tg.HapticFeedback.selectionChanged(); };
+function drawSizes() { $('sizes').innerHTML = F.sizes.map(([s, q, cm], i) => `<div class="tile ${q > 0 ? 'on' : ''}"><div class="x" data-del="${i}">×</div>
   <input value="${esc(s)}" data-i="${i}" class="sz" placeholder="Размер" maxlength="12">
+  ${isShoe() ? `<label class="cm"><input value="${esc(cm || '')}" data-i="${i}" class="ft" inputmode="decimal" placeholder="—" maxlength="5"><small>см стопа</small></label>` : ''}
   <div class="step"><span data-d="-1" data-i="${i}">−</span><input value="${q}" data-i="${i}" class="qt" inputmode="numeric"><span data-d="1" data-i="${i}">+</span></div></div>`).join(''); }
 $('sizes').oninput = e => { const i = +e.target.dataset.i; if (e.target.classList.contains('sz')) F.sizes[i][0] = e.target.value;
+  if (e.target.classList.contains('ft')) F.sizes[i][2] = e.target.value.replace(',', '.');
   if (e.target.classList.contains('qt')) F.sizes[i][1] = Math.max(0, parseInt(e.target.value) || 0); };
 $('sizes').onclick = e => { const t = e.target;
   if (t.dataset.d) { const i = +t.dataset.i; F.sizes[i][1] = Math.max(0, F.sizes[i][1] + +t.dataset.d); drawSizes(); }
   if (t.dataset.del) { F.sizes.splice(+t.dataset.del, 1); drawSizes(); } };
-$('addSize').onclick = () => { F.sizes.push(['', 1]); drawSizes(); };
+$('addSize').onclick = () => { F.sizes.push(isShoe() ? ['', 1, ''] : ['', 1]); drawSizes(); };
 $('chan').onclick = () => { F.channel = !F.channel; $('chan').lastElementChild.classList.toggle('on', F.channel); };
 $('name').oninput = () => { $('name').classList.remove('bad'); check(); };
 ['price', 'desc'].forEach(k => $(k).addEventListener('input', check));
@@ -164,5 +172,5 @@ if (QS.get('role') === 'supplier') {  // поставщик: свой город
   document.querySelector('.sub').textContent = 'Владелец проверит товар и опубликует в канале';
   $('city').addEventListener('input', () => document.querySelectorAll('.city').forEach(e => e.textContent = $('city').value || 'городу'));
 }
-F.sizes = grid(CATS.shoes[1]).map(s => [s, 1]); drawCats(); drawSizes(); check(); calc();
+F.sizes = fresh(); drawCats(); drawSizes(); check(); calc();
 </script></body></html>
