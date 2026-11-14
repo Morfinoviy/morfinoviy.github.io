@@ -27,6 +27,7 @@ h1{font-size:30px;font-weight:900;letter-spacing:-.03em;background:linear-gradie
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{padding:10px 16px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-weight:600;cursor:pointer;transition:.3s var(--ease);user-select:none}
 .prod:active,.chip:active{transform:scale(.96)}
+.chip.sz{text-align:center;min-width:58px} .chip.sz small{display:block;font-size:11px;font-weight:500;color:var(--mut);margin-top:1px} .chip.sz.sel small{color:#e9d5ff}
 .sel{background:linear-gradient(90deg,rgba(124,58,237,.6),rgba(168,85,247,.35))!important;border-color:rgba(192,132,252,.9)!important;color:#fff!important;
  box-shadow:0 0 0 1px rgba(192,132,252,.35),0 0 26px rgba(168,85,247,.55),inset 0 0 14px rgba(255,255,255,.1)!important}
 .sel small{color:#e9d5ff}
@@ -72,13 +73,12 @@ textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:
 <div class="sec"><b>Товар</b><div class="chips" id="catf" style="flex-wrap:nowrap;overflow-x:auto;margin-bottom:8px;scrollbar-width:none"></div><div class="chips" id="subf" style="flex-wrap:nowrap;overflow-x:auto;margin-bottom:10px;scrollbar-width:none"></div><div class="prods" id="prods"></div></div>
 <div class="sec" id="sizeSec" style="display:none"><b>Размер</b><div class="chips" id="sizes"></div></div>
 <div class="sec"><b>Доставка</b><div class="chips" id="dels"></div>
- <p class="hint" id="supDel" style="display:none">Товар поставщика — только Авито Доставка: деньги покупателя защищены, пока он не получит посылку.</p>
  <div class="check" id="cityOk" style="display:none"><i></i><span>Клиент оформил покупку в объявлении с городом <b class="city"></b></span></div></div>
-<div class="sec"><b>Получатель</b>
- <input id="fio" placeholder="ФИО" autocomplete="name" maxlength="120">
- <input id="phone" placeholder="Телефон" inputmode="tel" autocomplete="tel" maxlength="30">
-</div>
-<div class="sec"><b>Адрес или пункт выдачи</b><textarea id="address" placeholder="Город, адрес ПВЗ или постамата" maxlength="300"></textarea></div>
+<div class="sec"><b>Покупатель — необязательно</b>
+ <input id="fio" placeholder="Имя покупателя" autocomplete="off" maxlength="120">
+ <input id="phone" placeholder="Телефон покупателя" inputmode="tel" autocomplete="off" maxlength="30">
+ <textarea id="address" placeholder="Пункт выдачи — только если отправка без QR-кода Авито" maxlength="300"></textarea>
+ <p class="hint">Куда и кому везти, Авито уже знает — всё зашито в QR-код, который бот попросит следующим шагом. Эти поля нужны, только если QR-кода нет.</p></div>
 <div class="sec"><b>Твоя цена продажи, ₽</b><input id="sale" inputmode="decimal" placeholder="Необязательно — для подсчёта твоего заработка" maxlength="12"></div>
 <div class="sec"><b>Комментарий</b><input id="comment" placeholder="Необязательно" maxlength="500">
  <p class="hint">Фото QR-кода для отправки бот попросит сразу после анкеты.</p></div>
@@ -113,34 +113,29 @@ $('prods').onclick = e => { const el = e.target.closest('.prod'); if (!el) retur
   const [i, n, s, city] = cat[+el.dataset.k]; F.p = i; F.name = n; F.size = '';
   CITY = city || URL_CITY; document.querySelectorAll('.city').forEach(e => e.textContent = CITY); $('cityNote').style.display = CITY ? '' : 'none';
   $('sizeSec').style.display = s.length ? '' : 'none';
-  $('sizes').innerHTML = s.map(x => `<span class="chip">${esc(x)}</span>`).join(''); F.sizes = s;
-  const who = cat[+el.dataset.k][5]; $('supDel').style.display = who ? '' : 'none';  // товар поставщика — только Авито Доставка
-  $('dels').querySelectorAll('.chip').forEach(c => { const off = who && c.textContent !== 'Авито Доставка'; c.style.display = off ? 'none' : '';
-    if (off && c.classList.contains('sel')) { c.classList.remove('sel'); F.delivery = ''; $('cityOk').style.display = 'none'; } });
+  const left = cat[+el.dataset.k][7] || [];  // сколько осталось каждого размера
+  $('sizes').innerHTML = s.map((x, k) => `<span class="chip sz" data-s="${esc(x)}">${esc(x)}<small>${left[k] != null ? left[k] + ' шт' : ''}</small></span>`).join(''); F.sizes = s;
   check(); };
-$('sizes').onclick = e => { const el = e.target.closest('.chip'); if (!el) return; pick($('sizes'), el); F.size = el.textContent; check(); };
+$('sizes').onclick = e => { const el = e.target.closest('.chip'); if (!el) return; pick($('sizes'), el); F.size = el.dataset.s; check(); };
 $('dels').innerHTML = DELIVERY.map(x => `<span class="chip">${x}</span>`).join('');
 $('dels').onclick = e => { const el = e.target.closest('.chip'); if (!el) return; pick($('dels'), el); F.delivery = el.textContent;
-  $('cityOk').style.display = F.delivery === 'Авито Доставка' ? '' : 'none'; check(); };
+  check(); };
 const URL_CITY = new URLSearchParams(location.search).get('city') || ''; let CITY = URL_CITY;
 document.querySelectorAll('.city').forEach(e => e.textContent = CITY); if (!CITY) $('cityNote').style.display = 'none';
-F.cityOk = false;
+F.cityOk = false; $('cityOk').style.display = '';  // все доставки оформляются в Авито — город объявления важен всегда
 $('cityOk').onclick = () => { F.cityOk = !F.cityOk; $('cityOk').classList.toggle('on', F.cityOk); $('cityOk').classList.remove('need'); tg && tg.HapticFeedback.selectionChanged(); check(); };
-const cityNeed = () => CITY && F.delivery === 'Авито Доставка' && !F.cityOk;
+const cityNeed = () => CITY && !F.cityOk;
 ['fio', 'phone', 'address', 'comment'].forEach(k => $(k).oninput = () => { $(k).classList.remove('bad'); check(); });
 
-const ok = () => F.p !== null && (!F.sizes.length || F.size) && F.delivery && !cityNeed() && $('fio').value.trim().length > 1
-  && $('phone').value.replace(/\D/g, '').length >= 10 && $('address').value.trim().length > 3;
+const ok = () => F.p !== null && (!F.sizes.length || F.size) && F.delivery && !cityNeed();
 function check() {
-  const parts = [F.p !== null, F.p !== null && (!F.sizes.length || F.size), F.delivery, $('fio').value.trim().length > 1,
-    $('phone').value.replace(/\D/g, '').length >= 10, $('address').value.trim().length > 3];
+  const parts = [F.p !== null, F.p !== null && (!F.sizes.length || F.size), F.delivery, !cityNeed()];
   $('prog').style.width = parts.filter(Boolean).length / parts.length * 100 + '%';
   if (!tg) return $('send').style.display = 'block';
   ok() ? tg.MainButton.setParams({text: 'Отправить заказ', is_active: true, is_visible: true}) : tg.MainButton.hide(); }
 function submit() {
-  if (!ok()) { ['fio', 'address'].forEach(k => $(k).value.trim() || $(k).classList.add('bad'));
-    if ($('phone').value.replace(/\D/g, '').length < 10) $('phone').classList.add('bad'); return; }
   if (cityNeed()) $('cityOk').classList.add('need');
+  if (!ok()) return;
   const data = JSON.stringify({p: F.p, name: F.name, size: F.size, delivery: F.delivery, city_ok: F.cityOk, fio: $('fio').value.trim(),
     phone: $('phone').value.trim(), address: $('address').value.trim(), comment: $('comment').value.trim(), sale: $('sale').value.trim()});
   if (tg && tg.sendData) tg.sendData(data); else alert('Открой анкету из Telegram-бота');
