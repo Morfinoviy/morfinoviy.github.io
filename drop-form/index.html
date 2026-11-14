@@ -72,6 +72,7 @@ textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:
 <div class="sec"><b>Товар</b><div class="chips" id="catf" style="flex-wrap:nowrap;overflow-x:auto;margin-bottom:8px;scrollbar-width:none"></div><div class="chips" id="subf" style="flex-wrap:nowrap;overflow-x:auto;margin-bottom:10px;scrollbar-width:none"></div><div class="prods" id="prods"></div></div>
 <div class="sec" id="sizeSec" style="display:none"><b>Размер</b><div class="chips" id="sizes"></div></div>
 <div class="sec"><b>Доставка</b><div class="chips" id="dels"></div>
+ <p class="hint" id="supDel" style="display:none">Товар поставщика — только Авито Доставка: деньги покупателя защищены, пока он не получит посылку.</p>
  <div class="check" id="cityOk" style="display:none"><i></i><span>Клиент оформил покупку в объявлении с городом <b class="city"></b></span></div></div>
 <div class="sec"><b>Получатель</b>
  <input id="fio" placeholder="ФИО" autocomplete="name" maxlength="120">
@@ -112,7 +113,11 @@ $('prods').onclick = e => { const el = e.target.closest('.prod'); if (!el) retur
   const [i, n, s, city] = cat[+el.dataset.k]; F.p = i; F.name = n; F.size = '';
   CITY = city || URL_CITY; document.querySelectorAll('.city').forEach(e => e.textContent = CITY); $('cityNote').style.display = CITY ? '' : 'none';
   $('sizeSec').style.display = s.length ? '' : 'none';
-  $('sizes').innerHTML = s.map(x => `<span class="chip">${esc(x)}</span>`).join(''); F.sizes = s; check(); };
+  $('sizes').innerHTML = s.map(x => `<span class="chip">${esc(x)}</span>`).join(''); F.sizes = s;
+  const who = cat[+el.dataset.k][5]; $('supDel').style.display = who ? '' : 'none';  // товар поставщика — только Авито Доставка
+  $('dels').querySelectorAll('.chip').forEach(c => { const off = who && c.textContent !== 'Авито Доставка'; c.style.display = off ? 'none' : '';
+    if (off && c.classList.contains('sel')) { c.classList.remove('sel'); F.delivery = ''; $('cityOk').style.display = 'none'; } });
+  check(); };
 $('sizes').onclick = e => { const el = e.target.closest('.chip'); if (!el) return; pick($('sizes'), el); F.size = el.textContent; check(); };
 $('dels').innerHTML = DELIVERY.map(x => `<span class="chip">${x}</span>`).join('');
 $('dels').onclick = e => { const el = e.target.closest('.chip'); if (!el) return; pick($('dels'), el); F.delivery = el.textContent;
