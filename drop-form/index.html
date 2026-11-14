@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru"><head><meta charset="utf-8">
+<meta name="robots" content="noindex">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>Новый заказ</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -140,6 +141,7 @@ function submit() {
   if (tg && tg.sendData) tg.sendData(data); else alert('Открой анкету из Telegram-бота');
 }
 $('send').onclick = submit;
+if (tg && history.length > 1) { tg.BackButton.show(); tg.BackButton.onClick(() => history.back()); }  // пришли из меню-приложения
 if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor('#07050c'); tg.setBackgroundColor('#07050c'); } catch (e) {} tg.MainButton.color = '#7c3aed'; tg.MainButton.onClick(submit); }
 check();
 </script></body></html>

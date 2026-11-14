@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="robots" content="noindex">
+<title>Дроп</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--acc:#a855f7;--acc2:#7c3aed;--bg:#07050c;--fg:#f5f3ff;--mut:#a49cb8;--card:rgba(255,255,255,.05);--line:rgba(255,255,255,.1);--err:#f87171;--ok:#22c55e;--ease:cubic-bezier(.22,1,.36,1)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{font:15px/1.45 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif;color:var(--fg);padding:22px 14px 70px;min-height:100vh;counter-reset:s;
+ background:radial-gradient(120% 55% at 85% -10%,rgba(168,85,247,.38),transparent 60%),radial-gradient(90% 45% at -15% 45%,rgba(124,58,237,.2),transparent 60%),var(--bg);background-attachment:fixed}
+h1{font-size:30px;font-weight:900;letter-spacing:-.03em;background:linear-gradient(90deg,#fff 30%,#d8b4fe);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--mut);margin-top:4px}
+.bar{height:6px;border-radius:6px;background:rgba(255,255,255,.08);margin-top:16px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,var(--acc2),#c084fc);box-shadow:0 0 14px var(--acc);transition:width .6s var(--ease)}
+.sec{margin-top:14px;padding:16px;border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.025));border:1px solid var(--line);
+ backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 12px 34px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06);animation:up .6s var(--ease) both}
+.sec:nth-of-type(2){animation-delay:.05s}.sec:nth-of-type(3){animation-delay:.1s}.sec:nth-of-type(4){animation-delay:.15s}.sec:nth-of-type(5){animation-delay:.2s}.sec:nth-of-type(n+6){animation-delay:.25s}
+@keyframes up{from{opacity:0;transform:translateY(14px)}}
+.sec>b{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;font-weight:700}
+.sec>b:before{counter-increment:s;content:counter(s);flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;color:#fff;
+ background:linear-gradient(135deg,#c084fc,var(--acc2));box-shadow:0 0 12px rgba(168,85,247,.7)}
+.prods{display:flex;flex-direction:column;gap:8px}
+.prod{padding:14px 16px;border-radius:16px;background:var(--card);border:1px solid var(--line);font-weight:700;cursor:pointer;transition:.3s var(--ease)}
+.prod small{display:block;font-weight:400;color:var(--mut);margin-top:3px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:10px 16px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-weight:600;cursor:pointer;transition:.3s var(--ease);user-select:none}
+.prod:active,.chip:active{transform:scale(.96)}
+.sel{background:linear-gradient(90deg,rgba(124,58,237,.6),rgba(168,85,247,.35))!important;border-color:rgba(192,132,252,.9)!important;color:#fff!important;
+ box-shadow:0 0 0 1px rgba(192,132,252,.35),0 0 26px rgba(168,85,247,.55),inset 0 0 14px rgba(255,255,255,.1)!important}
+.sel small{color:#e9d5ff}
+input,textarea{width:100%;font:inherit;color:var(--fg);background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:14px;padding:13px 14px;outline:none;transition:.3s var(--ease)}
+input::placeholder,textarea::placeholder{color:#6f6782}
+input:focus,textarea:focus{border-color:rgba(192,132,252,.8);box-shadow:0 0 0 4px rgba(168,85,247,.18),0 0 20px rgba(168,85,247,.25)}
+textarea{min-height:80px;resize:vertical} input+input,input+textarea{margin-top:8px}
+.hint{color:var(--mut);font-size:13px;margin-top:10px} .bad{border-color:var(--err)!important;box-shadow:0 0 16px rgba(248,113,113,.35)!important}
+.empty{color:var(--mut);padding:26px 0;text-align:center}
+#send{display:none;margin-top:22px;width:100%;height:54px;border:0;border-radius:18px;color:#fff;font:800 16px inherit;
+ background:linear-gradient(90deg,var(--acc2),#c084fc);box-shadow:0 0 30px rgba(168,85,247,.55)}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px} .grid3 small{display:block;color:var(--mut);font-size:12px;margin:0 0 4px 4px}
+.srow{display:flex;gap:8px;align-items:center;margin-top:8px} .srow input{flex:1}
+.step{display:flex;align-items:center;background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.step span{width:40px;text-align:center;font-size:20px;color:#c084fc;cursor:pointer;user-select:none;padding:10px 0}
+.step input{width:50px;text-align:center;background:none;border:0;box-shadow:none!important;padding:12px 0}
+.x{width:36px;height:36px;display:grid;place-items:center;color:var(--mut);font-size:20px;cursor:pointer}
+.link{color:#c084fc;font-weight:700;margin-top:12px;display:inline-block;cursor:pointer;text-shadow:0 0 12px rgba(168,85,247,.6)}
+.toggle{display:flex;align-items:center;justify-content:space-between;font-weight:600;cursor:pointer}
+.sw{width:52px;height:30px;border-radius:999px;background:rgba(255,255,255,.12);position:relative;transition:.35s var(--ease);flex:none}
+.sw:after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.35s var(--ease);box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.sw.on{background:linear-gradient(90deg,var(--acc2),#c084fc);box-shadow:0 0 22px rgba(168,85,247,.65)} .sw.on:after{transform:translateX(22px)}
+.note{margin-top:14px;padding:14px 16px;border-radius:18px;background:linear-gradient(135deg,rgba(124,58,237,.35),rgba(168,85,247,.12));
+ border:1px solid rgba(192,132,252,.45);box-shadow:0 0 26px rgba(168,85,247,.25);font-size:14px;animation:up .6s var(--ease) both}
+.note b{display:block;font-size:15px;margin-bottom:4px} .note details{margin-top:8px;color:#e9d5ff} .note summary{cursor:pointer;color:#d8b4fe;font-weight:700}
+.note ol{margin:8px 0 0 18px} .note li{margin-top:4px}
+.check{display:flex;gap:12px;align-items:flex-start;margin-top:12px;padding:12px 14px;border-radius:14px;background:rgba(0,0,0,.28);border:1px solid var(--line);cursor:pointer;transition:.3s var(--ease)}
+.check i{flex:none;width:24px;height:24px;border-radius:8px;border:2px solid rgba(192,132,252,.6);display:grid;place-items:center;font-style:normal;transition:.3s var(--ease)}
+.check.on{border-color:rgba(192,132,252,.8);box-shadow:0 0 22px rgba(168,85,247,.35)} .check.on i{background:linear-gradient(135deg,#c084fc,var(--acc2));border-color:transparent}
+.check.on i:after{content:"✓";color:#fff;font-weight:900} .check.need{border-color:var(--err);box-shadow:0 0 16px rgba(248,113,113,.35)}
+.total{display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding:12px 14px;border-radius:14px;background:rgba(168,85,247,.12);border:1px solid rgba(192,132,252,.35)}
+.total b{font-size:22px;font-weight:900;letter-spacing:-.02em} .margin-ok{color:var(--ok)} .margin-bad{color:var(--err)}
+
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.tile{padding:16px;border-radius:20px;background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.025));border:1px solid var(--line);
+ cursor:pointer;transition:.3s var(--ease);animation:up .6s var(--ease) both;min-height:92px;display:flex;flex-direction:column;justify-content:space-between}
+.tile:active{transform:scale(.96)} .tile i{font-style:normal;font-size:24px} .tile b{font-size:15px} .tile small{color:var(--mut);font-size:12px}
+.tile.main{grid-column:1/-1;background:linear-gradient(90deg,rgba(124,58,237,.6),rgba(168,85,247,.3));border-color:rgba(192,132,252,.7);box-shadow:0 0 26px rgba(168,85,247,.4)}
+.lv{margin-top:14px;padding:14px 16px;border-radius:18px;background:var(--card);border:1px solid var(--line)}
+.lv .row{display:flex;justify-content:space-between;align-items:baseline} .lv .bar{margin-top:10px}
+.scr{display:none} .scr.on{display:block;animation:up .45s var(--ease) both}
+.item{padding:12px 14px;border-radius:14px;background:var(--card);border:1px solid var(--line);margin-top:8px}
+.item small{display:block;color:var(--mut);margin-top:2px}
+.txt{white-space:pre-wrap;line-height:1.5}
+.btn{display:block;width:100%;margin-top:12px;height:50px;border:0;border-radius:16px;color:#fff;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;
+ background:linear-gradient(90deg,var(--acc2),#c084fc);box-shadow:0 0 24px rgba(168,85,247,.45)}
+.btn.ghost{background:var(--card);border:1px solid var(--line);box-shadow:none}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px} .stats div{padding:12px;border-radius:14px;background:rgba(0,0,0,.25);border:1px solid var(--line)}
+.stats b{display:block;font-size:18px} .stats small{color:var(--mut);font-size:12px}
+</style></head><body>
+<section class="scr on" id="home">
+ <h1 id="hi">Привет!</h1><p class="sub" id="role">Дроп-канал</p>
+ <div class="lv" id="lv"></div>
+ <div class="tiles" id="tiles"></div>
+</section>
+<section class="scr" id="orders"><h1>Мои заказы</h1><div id="oList"></div></section>
+<section class="scr" id="sales"><h1>Мои продажи</h1><div id="sList"></div></section>
+<section class="scr" id="invite"><h1>Пригласить</h1><div id="inv"></div></section>
+<section class="scr" id="howto"><h1>Как работать</h1><div class="sec txt" id="memo"></div></section>
+<script>
+const tg = window.Telegram && Telegram.WebApp, $ = id => document.getElementById(id), QS = new URLSearchParams(location.search);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const rub = n => Math.round(+n || 0).toLocaleString('ru') + ' ₽';
+const unb64 = s => JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0))));
+let D = {}; try { D = unb64(QS.get('d') || ''); } catch (e) {}
+const back = () => go('home');
+function go(id) {
+  document.querySelectorAll('.scr').forEach(s => s.classList.toggle('on', s.id === id)); scrollTo(0, 0);
+  if (tg) id === 'home' ? tg.BackButton.hide() : tg.BackButton.show();
+}
+function nav(where) {
+  if (where === 'order') location.href = '../drop-form/?c=' + (QS.get('c') || '') + '&city=' + encodeURIComponent(QS.get('city') || '');
+  else if (where === 'product') location.href = '../drop-admin/?' + (D.s || {}).q;
+  else if (where === 'support') { const u = 'https://t.me/' + String(D.sup || '').replace(/^@/, ''); tg ? tg.openTelegramLink(u) : location.href = u; }
+  else go(where);
+}
+const st = D.st || {}, lv = D.lv || [];
+$('hi').textContent = 'Привет, ' + (D.n || 'партнёр') + '!';
+$('role').textContent = D.s ? 'Партнёр и поставщик' : 'Партнёр дроп-канала';
+$('lv').innerHTML = `<div class="row"><b>${esc(lv[0] || '')} ${esc(lv[1] || '')}</b><small class="sub">${st.orders || 0} заказов · заработал ${rub(st.earned)}</small></div>
+  <div class="bar"><i style="width:${Math.min(100, lv[2] || 0)}%"></i></div>
+  <small class="sub">${lv[3] ? `До ${esc(lv[3])}: ещё ${rub(lv[4])} оборота` : 'Максимальный уровень'}</small>`;
+const T = [['order', '🛒', 'Новый заказ', 'Анкета и QR-код', 'main'], ['orders', '📋', 'Мои заказы', (D.o || []).length ? (D.o || []).length + ' последних' : 'пока нет'],
+  ['invite', '🤝', 'Пригласить', (D.rr || 0) + '% с оборота друзей'], ['howto', 'ℹ️', 'Как работать', 'Шаг за шагом'], ['support', '💬', 'Поддержка', esc(D.sup || '')]];
+if (D.s) T.push(['product', '➕', 'Новый товар', 'Фото, размеры, цена'], ['sales', '🏪', 'Мои продажи', D.s.until ? 'подписка до ' + esc(D.s.until) : 'подписка не оплачена']);
+$('tiles').innerHTML = T.map(([w, i, b, s, c], k) => `<div class="tile ${c || ''}" style="animation-delay:${k * .04}s" onclick="nav('${w}')"><i>${i}</i><div><b>${b}</b><br><small>${s}</small></div></div>`).join('');
+$('oList').innerHTML = (D.o || []).map(([id, p, sz, s, who]) => `<div class="item"><b>№${id} ${esc(p)} ${esc(sz)}</b><small>${esc(s)}${who ? ' · вопросы: ' + esc(who) : ''}</small></div>`).join('')
+  || '<p class="empty">Заказов пока нет</p>';
+$('inv').innerHTML = `<div class="sec"><p>Ты получаешь <b>${D.rr || 0}%</b> с оборота каждого, кто придёт по твоей ссылке.</p>
+  <div class="item" style="word-break:break-all">${esc(D.ref || '')}</div>
+  <button class="btn" onclick="share()">Отправить ссылку</button><button class="btn ghost" onclick="copy()">Скопировать</button></div>
+  <div class="stats"><div><b>${st.refs || 0}</b><small>приглашено</small></div><div><b>${rub(st.ref_bonus)}</b><small>твой бонус</small></div>
+  <div style="grid-column:1/-1"><b>${rub(st.ref_turnover)}</b><small>оборот приглашённых</small></div></div>`;
+$('memo').textContent = (D.memo || '') + (D.s ? '\n\n' + D.s.memo : '');
+if (D.s) $('sList').innerHTML = `<div class="stats"><div><b>${D.s.sold || 0}</b><small>продано</small></div><div><b>${rub(D.s.gross)}</b><small>по дроп-цене</small></div>
+  <div style="grid-column:1/-1"><b>${D.s.until ? 'до ' + esc(D.s.until) : 'не оплачена'}</b><small>подписка ${esc(D.s.sub)} ₽ в месяц${D.s.until ? '' : ' — товары скрыты, переведи владельцу ' + esc(D.sup || '')}</small></div></div>` +
+  ((D.s.list || []).map(([id, p, sz, s]) => `<div class="item"><b>№${id} ${esc(p)} ${esc(sz)}</b><small>${esc(s)}</small></div>`).join('') || '<p class="empty">Пока продаж нет</p>');
+function share() { const u = 'https://t.me/share/url?url=' + encodeURIComponent(D.ref || '') + '&text=' + encodeURIComponent('Дроп-канал: продавай товары без вложений'); tg ? tg.openTelegramLink(u) : window.open(u); }
+function copy() { navigator.clipboard.writeText(D.ref || '').then(() => tg ? tg.showAlert('Ссылка скопирована') : alert('Скопировано'), () => {}); }
+if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor('#07050c'); tg.setBackgroundColor('#07050c'); } catch (e) {} tg.BackButton.onClick(back); }
+</script></body></html>
